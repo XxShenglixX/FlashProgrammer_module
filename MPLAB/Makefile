@@ -1,0 +1,25 @@
+# MPLAB IDE generated this makefile for use with GNU make.
+# Project: Serial_Interrupt.mcp
+# Date: Thu Aug 14 13:50:09 2014
+
+AS = MPASMWIN.exe
+CC = mcc18.exe
+LD = mplink.exe
+AR = mplib.exe
+RM = rm
+
+Serial_Interrupt.cof : SerialInterrupt.o UART.o main.o
+	$(LD) /p18F4520 /l"C:\Program Files (x86)\Microchip\mplabc18\v3.46\lib" "SerialInterrupt.o" "UART.o" "main.o" /u_CRUNTIME /u_DEBUG /z__MPLAB_BUILD=1 /z__MPLAB_DEBUG=1 /o"Serial_Interrupt.cof" /M"Serial_Interrupt.map" /W
+
+SerialInterrupt.o : ../src/SerialInterrupt.c ../src/UART.h ../src/SerialInterrupt.h ../src/SerialInterrupt.c ../../../../../../Program\ Files\ (x86)/Microchip/mplabc18/v3.46/h/p18f4520.h
+	$(CC) -p=18F4520 "C:\Users\Asus\Desktop\TDD\SerialInterrupt\src\SerialInterrupt.c" -fo="SerialInterrupt.o" -D__DEBUG -Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa-
+
+UART.o : ../src/UART.c ../src/UART.h ../src/UART.c ../../../../../../Program\ Files\ (x86)/Microchip/mplabc18/v3.46/h/p18f4520.h
+	$(CC) -p=18F4520 "C:\Users\Asus\Desktop\TDD\SerialInterrupt\src\UART.c" -fo="UART.o" -D__DEBUG -Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa-
+
+main.o : ../src/main.c ../src/UART.h ../src/main.c ../../../../../../Program\ Files\ (x86)/Microchip/mplabc18/v3.46/h/p18f4520.h
+	$(CC) -p=18F4520 "C:\Users\Asus\Desktop\TDD\SerialInterrupt\src\main.c" -fo="main.o" -D__DEBUG -Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa-
+
+clean : 
+	$(RM) "SerialInterrupt.o" "UART.o" "main.o" "Serial_Interrupt.cof" "Serial_Interrupt.hex"
+
