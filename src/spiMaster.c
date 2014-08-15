@@ -8,6 +8,7 @@
 #define ACK 0xA5
 #define Write 0x11
 #define Read 0x22
+#define CONFIG 0x33
 #define Done 0xFF
 
 
@@ -84,6 +85,18 @@ uint8 spiSendAddress(FlashBuffer *fb)
 		return 1 ;
 }
 
+uint8 spiSendConfig(uint8 *data,FlashBuffer *fb)
+{
+	
+	if(!spiSendCommand(CONFIG))
+		return 0;
+	if(!spiSendAddress(fb))
+		return 0;
+	if(!spiSendData(data,1,5))
+		return 0;
+		
+	return 1 ;
+}
 
 uint8 spiReceiveData(uint8 *data,uint8 count)
 {
@@ -139,4 +152,5 @@ uint8 checkACK(uint8 *data)
 	else
 		return 0 ;
 }
+
 
