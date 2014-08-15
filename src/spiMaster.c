@@ -71,6 +71,7 @@ uint8 spiSendCommand(uint8 command)
 uint8 spiSendAddress(FlashBuffer *fb)
 {
 	uint8 addressArray[3] ;	
+	
 	uint32 address = fb->segment * 0x40 ;
 
 	addressArray[0] = address ;

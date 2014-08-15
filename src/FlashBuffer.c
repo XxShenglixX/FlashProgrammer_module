@@ -1,7 +1,7 @@
 #include "FlashBuffer.h"
 #include "spiMaster.h"
 #include "Utils.h"
-#include <Delays.h>
+#include "delays.h"
 #define Write 0x11
 
 uint32 flashBufferGetLastAddress(FlashBuffer *fb)
@@ -12,13 +12,22 @@ uint32 flashBufferGetLastAddress(FlashBuffer *fb)
 	return (fb->offset + (fb->segment * 0x40) ) ;
 }
 
-void flashBufferFlush(FlashBuffer *fb)
+uint8 flashBufferFlush(FlashBuffer *fb)
 {
-	spiSendCommand(Write);
-	spiSendAddress(fb);
-	spiSendData(fb->buffer,64,0);
-	while(!(spiReceiveStatus))
+	if(!spiSendCommand(Write))
+		return 0 ;
+	
+ 	 if(!spiSendAddress(fb))
+		return 0 ;
+		
+	 if(!spiSendData(fb->buffer,64,0))
+		return 0; 
+		
+	while(!spiReceiveStatus())
 	{
 		Delay10TCYx(2);
 	}
+		
+
+		return 1 ; 
 }
