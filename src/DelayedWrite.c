@@ -12,10 +12,10 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,uint8 dataStartPoi
 				dataToBuffer(address,data,dataCount,dataStartPoint,fb);
 			else 
 				{
-					shift = 63 - (fb->offset) ;
+					shift = 64 - (fb->offset) ;
 					dataToBuffer(address,data,shift,dataStartPoint,fb);
-			
-					flashBufferFlush(fb);
+					while(!flashBufferFlush(fb));
+					fb->offset = 0 ;
 					fb->segment ++ ;
 					newAdd = fb->segment * 64 ;
 					dataToBuffer(newAdd,data,dataCount-shift,dataStartPoint+shift,fb);
@@ -23,7 +23,7 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,uint8 dataStartPoi
 		}
 	else
 		{
-			flashBufferFlush(fb);
+			while(!flashBufferFlush(fb));
 			dataToBuffer(address,data,dataCount,dataStartPoint,fb);
 		}
 
