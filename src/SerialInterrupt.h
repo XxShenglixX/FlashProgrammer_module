@@ -27,4 +27,5 @@ void chk_SerialISR(void);
 void SerialISR(void);
 void tlvReceiveFSM(TLV_FSM *fsm);
 
+
 #endif // SerialInterrupt_H

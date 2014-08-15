@@ -71,13 +71,12 @@ void test_bufferHandler_given_address_0x10_segment_0_dataCount_10_should_not_flu
 	uint8 buffer[64] ;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
 	uint8 dataCount = 10 ;
-	uint8 dataStartPoint = 0;
 	
 	FlashBuffer fb ;
 	fb.buffer = buffer;
 	fb.segment = 0 ;
 	
-	bufferHandler(address,data,dataCount,dataStartPoint,&fb);
+	bufferHandler(address,data,dataCount,&fb);
 	TEST_ASSERT_EQUAL(1,buffer[16]);
 	TEST_ASSERT_EQUAL(2,buffer[17]);
 	TEST_ASSERT_EQUAL(3,buffer[18]);
@@ -99,7 +98,6 @@ void test_bufferHandler_given_address_0x10_segment_1_dataCount_5_should_flush_bu
 	uint8 buffer[64] ;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
 	uint8 dataCount = 5 ;
-	uint8 dataStartPoint = 0;
 	
 	FlashBuffer fb ;
 	fb.buffer = buffer;
@@ -107,7 +105,7 @@ void test_bufferHandler_given_address_0x10_segment_1_dataCount_5_should_flush_bu
 	
 	
 	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,dataStartPoint,&fb);
+	bufferHandler(address,data,dataCount,&fb);
 	
 	TEST_ASSERT_EQUAL(1,buffer[16]);
 	TEST_ASSERT_EQUAL(2,buffer[17]);
@@ -124,7 +122,6 @@ void test_bufferHandler_given_flushBufferflush_fail_will_repeat_flushing_until_s
 	uint8 buffer[64] ;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
 	uint8 dataCount = 5 ;
-	uint8 dataStartPoint = 0;
 	
 	FlashBuffer fb ;
 	fb.buffer = buffer;
@@ -135,7 +132,7 @@ void test_bufferHandler_given_flushBufferflush_fail_will_repeat_flushing_until_s
 	flashBufferFlush_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,dataStartPoint,&fb);
+	bufferHandler(address,data,dataCount,&fb);
 	
 	TEST_ASSERT_EQUAL(1,buffer[16]);
 	TEST_ASSERT_EQUAL(2,buffer[17]);
@@ -152,7 +149,6 @@ void test_bufferHandler_given_address_0x3C_segment_0_dataCount_5_should_flush_bu
 	uint8 buffer[64] ;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
 	uint8 dataCount = 5 ;
-	uint8 dataStartPoint = 0;
 	
 	FlashBuffer fb ;
 	fb.buffer = buffer;
@@ -160,7 +156,7 @@ void test_bufferHandler_given_address_0x3C_segment_0_dataCount_5_should_flush_bu
 	fb.offset = address - (fb.segment * 64);
 	
 	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,dataStartPoint,&fb);
+	bufferHandler(address,data,dataCount,&fb);
 	
 	TEST_ASSERT_EQUAL(5,buffer[0]);
 	TEST_ASSERT_EQUAL(1,fb.offset);
