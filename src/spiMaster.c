@@ -1,15 +1,17 @@
 #include "p18f4520.h"
-#include "spiMaster.h"
-#include "FlashBuffer.h"
-#include "18c.h"
 #include "spi.h"
 #include "delays.h"
+
+#include "spiMaster.h"
+#include "FlashBuffer.h"
 #include "Utils.h"
 #define ACK 0xA5
 #define Write 0x11
 #define Read 0x22
 #define Done 0xFF
 
+
+uint8 tlvFrameReady = 0x11;
 /**
  * Configure SPI in PIC18 as master
  *
@@ -26,21 +28,43 @@ void spiConfigureMaster(void)
 void spiSendByte(uint8 data)
 {
 	WriteSPI(data) ;
+	Delay10TCYx(2);
+}
+
+uint8 spiSendData(uint8 *data,uint8 count,uint8 startPoint)
+{
+	uint8 acknack , i , j = startPoint;
+	
+	spiConfigureMaster();
+
+	for ( i = 0 ; i < count  ; i ++ )
+	{
+		spiSendByte(data[j]);
+		acknack = ReadSPI();
+		j++;
+	if(!checkACK(&acknack))
+			return 0 ; //return 0 for error
+	}
+
+	CloseSPI();
 	Delay10TCYx(1);
+	return 1 ; //return 1 for OK
 }
 
 
 uint8 spiSendCommand(uint8 command)
 {
-	uint8 acknack;
+	uint8 acknack,dummy;
 	spiConfigureMaster();
 
 	spiSendByte(command);
 	acknack = ReadSPI();
 	
-	if(!spiCheckACK(&acknack))
+	if(!checkACK(&acknack))
 		return 0 ; //return 0 for error
 
+	CloseSPI();
+	Delay10TCYx(1);
 	return 1 ;
 }
 
@@ -59,33 +83,6 @@ uint8 spiSendAddress(FlashBuffer *fb)
 		return 1 ;
 }
 
-uint8 spiSendData(uint8 *data,uint8 count,uint8 startPoint)
-{
-	uint8 acknack , i ;
-	
-	spiConfigureMaster();
-
-	for ( i = startPoint ; i < count  ; i ++ )
-	{
-		spiSendByte(data[i]);
-		acknack = ReadSPI();
-	
-		if(!spiCheckACK(&acknack))
-			return 0 ; //return 0 for error
-	}
-
-	CloseSPI();
-	Delay10TCYx(1);
-	return 1 ; //return 1 for OK
-}
-
-uint8 spiCheckACK(uint8 *data)
-{
-	if (*data == ACK)
-		return 1 ;
-	else
-		return 0 ;
-}
 
 uint8 spiReceiveData(uint8 *data,uint8 count)
 {
@@ -102,6 +99,8 @@ uint8 spiReceiveData(uint8 *data,uint8 count)
 	Delay10TCYx(1);
 	return 1 ; //return 1 for OK
 }
+
+
 
 uint8 spiReceiveStatus(void)
 {
@@ -132,12 +131,11 @@ uint8 readID(void)
 	return 1;
 }
 
-void readSegment(FlashBuffer *fb)
-{	
-	uint8 segmentData[64];
-
-	spiSendCommand(Read);
-	spiReceiveData(segmentData,64);
-	fb->buffer = segmentData;
-
+uint8 checkACK(uint8 *data)
+{
+	if (*data == ACK)
+		return 1 ;
+	else
+		return 0 ;
 }
+
