@@ -1,2 +1,5 @@
 build/*
+MPLAB/*.map
+MPLAB/*.o
+MPLAB/*.lst
 !build/README.txt
