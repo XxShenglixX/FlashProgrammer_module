@@ -65,7 +65,7 @@ void test_dataToBuffer_given_address_0x10_dataCount_5_address_0x1A_dataCount_3_s
 	TEST_ASSERT_EQUAL(0,fb.segment);  
 }
 
-void test_bufferHandler_given_address_0x10_dataCount_10_should_not_flush_buffer()
+void test_bufferHandler_given_address_0x10_dataCount_10_should_readBuffer_and_not_flush_buffer()
 {
 	uint32 address = 0x10 ;
 	uint8 buffer[64], dataCount = 10, memory = 0, previousSegment ;
@@ -96,7 +96,8 @@ void test_bufferHandler_given_address_0x10_dataCount_10_should_not_flush_buffer(
 
 }
 
-void test_bufferHandler_given_address_0x10_0x64_dataCount_1_5_should_flush_buffer()
+/*Different segment*/
+void test_bufferHandler_given_address_0x10_0x64_dataCount_5_5_should_readbuffer_flush_read_again()
 {
 	uint32 address = 0x10 ;
 	uint8 buffer[64], dataCount = 5, memory = 0,previousSegment;
@@ -135,8 +136,8 @@ void test_bufferHandler_given_address_0x10_0x64_dataCount_1_5_should_flush_buffe
 }
 
 
-
-void test_bufferHandler_given_address_0x00_dataCount_100_should_flush_buffer()
+/*Cross segment*/
+void test_bufferHandler_given_address_0x00_dataCount_100_should_readBuffer_flush_and_read_again()
 {
 	uint32 address = 0x00 ;
 	uint8 buffer[64], dataCount = 100, memory = 0,previousSegment;

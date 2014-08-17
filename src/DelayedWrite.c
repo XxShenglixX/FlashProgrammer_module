@@ -24,14 +24,14 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,ui
 	if (address >= 0x300000) //Address 0x300000 contains configuration register
 		{
 			spiSendConfig(address,data);// Different method of sending data and programming required
-			return ; // quit function
+			return ; //force quit function
 		}
 
 	if (*memory == 0 ) //To be used to store the previous segment accessed
 	{
 		*previousSegment = fb->segment ;
 		while(!flashBufferRead(fb)); //Read the segment from the slave
-		*memory = 1; //And do not update previousSegment
+		*memory = 1; //prevent auto updating previousSegment
 	}
 
 	if ( fb->segment == *previousSegment) //Check if writing in the same segment
@@ -47,7 +47,7 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,ui
 					fb->offset = 0 ; //Reset flash buffer offset to 0
 					fb->segment ++ ; //Increment the segment
 					newAddress = fb->segment * 64 ; // Store the new address since segment has incremented
-					*memory = 0 ; //Enable to store the new previous segment
+					*previousSegment = fb->segment ; //sync previousSegment with current segment
 
 					while(!flashBufferRead(fb)); // Read the segment from the slave
 					dataToBuffer(newAddress,data,dataCount-shift,dataStartPoint+shift,fb); // Copy remaining data to the flash buffer
@@ -55,13 +55,18 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,ui
 																						   // dataStartPoint + shift -> prevent copying copied data
 				}
 		}
-	else
+	else //if different segment occurs
 		{
-			while(!flashBufferFlush(fb));
-			while(!flashBufferRead(fb));
-			fb->offset = 0 ;
-			*previousSegment = address/64 ;
-			dataToBuffer(address,data,dataCount,dataStartPoint,fb);
+			fb->segment = *previousSegment ; //restore fb->segment to previousSegment
+			while(!flashBufferFlush(fb)); // flush the previous buffer
+
+			fb->segment = address/64 ; //restore fb.segment to the latest segment
+			*previousSegment = address/64 ; //sync previousSegment with current segment
+
+			while(!flashBufferRead(fb)); // read new segment
+
+			fb->offset = 0 ; //Reset flash buffer offset to 0
+			dataToBuffer(address,data,dataCount,dataStartPoint,fb); //copy data to new segment of flash buffer
 		}
 
 }
@@ -71,10 +76,11 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,ui
 /**
  * Copy data to the slave flash buffer only
  *
- * Input : address		is the starting address of the data going to be written
- *		   data			contain the pointer to data array going to be written
- *		   dataCount	is the amount of data in the data array
- *		   fb			contain the segment,offset and pointer to the slave flash buffer
+ * Input : address			is the starting address of the data going to be written
+ *		   data				contain the pointer to data array going to be written
+ *		   dataCount		is the amount of data in the data array
+ *		   dataStartPoint	is the starting location of data going to be accessed
+ *		   fb				contain the segment,offset and pointer to the slave flash buffer
  *
  *
  */
