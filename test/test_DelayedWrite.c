@@ -1,6 +1,6 @@
 #include "unity.h"
 #include "DelayedWrite.h"
-
+#include "mock_spiMaster.h"
 #include "mock_FlashBuffer.h"
 #include "Utils.h"
 
@@ -65,18 +65,19 @@ void test_dataToBuffer_given_address_0x10_dataCount_5_address_0x1A_dataCount_3_s
 	TEST_ASSERT_EQUAL(0,fb.segment);  
 }
 
-void test_bufferHandler_given_address_0x10_segment_0_dataCount_10_should_not_flush_buffer()
+void test_bufferHandler_given_address_0x10_dataCount_10_should_not_flush_buffer()
 {
 	uint32 address = 0x10 ;
-	uint8 buffer[64] ;
+	uint8 buffer[64], dataCount = 10, memory = 0, previousSegment ;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
-	uint8 dataCount = 10 ;
+
 	
 	FlashBuffer fb ;
 	fb.buffer = buffer;
-	fb.segment = 0 ;
 	
-	bufferHandler(address,data,dataCount,&fb);
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	bufferHandler(address,data,dataCount,&fb,&previousSegment,&memory);
+	
 	TEST_ASSERT_EQUAL(1,buffer[16]);
 	TEST_ASSERT_EQUAL(2,buffer[17]);
 	TEST_ASSERT_EQUAL(3,buffer[18]);
@@ -87,25 +88,26 @@ void test_bufferHandler_given_address_0x10_segment_0_dataCount_10_should_not_flu
 	TEST_ASSERT_EQUAL(8,buffer[23]);
 	TEST_ASSERT_EQUAL(9,buffer[24]);
 	TEST_ASSERT_EQUAL(10,buffer[25]);
+	
+	TEST_ASSERT_EQUAL(0,previousSegment);
+	TEST_ASSERT_EQUAL(1,memory);
 	TEST_ASSERT_EQUAL(26,fb.offset);
 	TEST_ASSERT_EQUAL(0,fb.segment); 
 
 }
 
-void test_bufferHandler_given_address_0x10_segment_1_dataCount_5_should_flush_buffer()
+void test_bufferHandler_given_address_0x10_0x64_dataCount_1_5_should_flush_buffer()
 {
 	uint32 address = 0x10 ;
-	uint8 buffer[64] ;
+	uint8 buffer[64], dataCount = 5, memory = 0,previousSegment;
 	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
-	uint8 dataCount = 5 ;
-	
+
 	FlashBuffer fb ;
 	fb.buffer = buffer;
-	fb.segment = 1 ;
 	
 	
-	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,&fb);
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	bufferHandler(address,data,dataCount,&fb,&previousSegment,&memory);
 	
 	TEST_ASSERT_EQUAL(1,buffer[16]);
 	TEST_ASSERT_EQUAL(2,buffer[17]);
@@ -114,52 +116,43 @@ void test_bufferHandler_given_address_0x10_segment_1_dataCount_5_should_flush_bu
 	TEST_ASSERT_EQUAL(5,buffer[20]);
 	TEST_ASSERT_EQUAL(21,fb.offset);
 	TEST_ASSERT_EQUAL(0,fb.segment); 
-}
-
-void test_bufferHandler_given_flushBufferflush_fail_will_repeat_flushing_until_success()
-{
-	uint32 address = 0x10 ;
-	uint8 buffer[64] ;
-	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
-	uint8 dataCount = 5 ;
+	TEST_ASSERT_EQUAL(1,memory);
+	TEST_ASSERT_EQUAL(0,previousSegment);
 	
-	FlashBuffer fb ;
-	fb.buffer = buffer;
-	fb.segment = 1 ;
-	
-	
-	flashBufferFlush_ExpectAndReturn(&fb,0);
-	flashBufferFlush_ExpectAndReturn(&fb,0);
-	flashBufferFlush_ExpectAndReturn(&fb,0);
+	address = 0x64;
 	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,&fb);
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	bufferHandler(address,data,dataCount,&fb,&previousSegment,&memory);
 	
-	TEST_ASSERT_EQUAL(1,buffer[16]);
-	TEST_ASSERT_EQUAL(2,buffer[17]);
-	TEST_ASSERT_EQUAL(3,buffer[18]);
-	TEST_ASSERT_EQUAL(4,buffer[19]);
-	TEST_ASSERT_EQUAL(5,buffer[20]);
-	TEST_ASSERT_EQUAL(21,fb.offset);
-	TEST_ASSERT_EQUAL(0,fb.segment); 
-}
-
-void test_bufferHandler_given_address_0x3C_segment_0_dataCount_5_should_flush_buffer()
-{
-	uint32 address = 60 ;
-	uint8 buffer[64] ;
-	uint8 data[20] = {1,2,3,4,5,6,7,8,9,10} ;
-	uint8 dataCount = 5 ;
-	
-	FlashBuffer fb ;
-	fb.buffer = buffer;
-	fb.segment = 0 ;
-	fb.offset = address - (fb.segment * 64);
-	
-	flashBufferFlush_ExpectAndReturn(&fb,1);
-	bufferHandler(address,data,dataCount,&fb);
-	
-	TEST_ASSERT_EQUAL(5,buffer[0]);
-	TEST_ASSERT_EQUAL(1,fb.offset);
+	TEST_ASSERT_EQUAL(1,buffer[36]);
+	TEST_ASSERT_EQUAL(2,buffer[37]);
+	TEST_ASSERT_EQUAL(3,buffer[38]);
+	TEST_ASSERT_EQUAL(4,buffer[39]);
+	TEST_ASSERT_EQUAL(5,buffer[40]);
+	TEST_ASSERT_EQUAL(41,fb.offset);
 	TEST_ASSERT_EQUAL(1,fb.segment); 
+	
 }
 
+
+
+void test_bufferHandler_given_address_0x00_dataCount_100_should_flush_buffer()
+{
+	uint32 address = 0x00 ;
+	uint8 buffer[64], dataCount = 100, memory = 0,previousSegment;
+	uint8 data[124] = {1,2,3,4,5,6,7,8,9,10} ;
+	
+	FlashBuffer fb ;
+	fb.buffer = buffer;
+	
+	
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	flashBufferFlush_ExpectAndReturn(&fb,1);
+	
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	bufferHandler(address,data,dataCount,&fb,&previousSegment,&memory);
+	TEST_ASSERT_EQUAL(36,fb.offset);
+	TEST_ASSERT_EQUAL(1,fb.segment);
+
+}
+ 

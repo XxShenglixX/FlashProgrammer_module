@@ -11,6 +11,9 @@
 #define Write 0x11
 #define Read 0x22
 #define Done 0xFF
+
+extern uint8 slaveBuffer[64];
+
 void setUp(void)
 {
 }
@@ -48,7 +51,7 @@ void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_spiSendAdd
 	
 	
 	spiSendCommand_ExpectAndReturn(Write,1);
-	spiSendAddress_ExpectAndReturn(&fb,1);
+	spiSendAddressSegment_ExpectAndReturn(&fb,1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
 	spiReceiveStatus_ExpectAndReturn(1);
 
@@ -84,7 +87,7 @@ void test_flashBufferFlush_given_segment_20__given_spiReceiveStatus_fail_will_lo
 	
 	
 	spiSendCommand_ExpectAndReturn(Write,1);
-	spiSendAddress_ExpectAndReturn(&fb,1);
+	spiSendAddressSegment_ExpectAndReturn(&fb,1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
 	
 	spiReceiveStatus_ExpectAndReturn(0);

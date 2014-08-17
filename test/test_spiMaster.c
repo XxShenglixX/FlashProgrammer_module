@@ -189,7 +189,7 @@ void test_spiSendCommand_given_Read_should_send_command_and_return_0_if_ACK_is_n
 	TEST_ASSERT_EQUAL(0,spiSendCommand(Write));
 }
 
-void test_spiSendAddress_given_segment_1_should_send_64_and_return_1_if_ACK_is_received()
+void test_spiSendAddressSegment_given_segment_1_should_send_64_and_return_1_if_ACK_is_received()
 {
 	FlashBuffer fb;
 	fb.segment = 1;
@@ -215,10 +215,10 @@ void test_spiSendAddress_given_segment_1_should_send_64_and_return_1_if_ACK_is_r
 	CloseSPI_Expect();
 	Delay10TCYx_Expect(1);
 
-	TEST_ASSERT_EQUAL(1,spiSendAddress(&fb));
+	TEST_ASSERT_EQUAL(1,spiSendAddressSegment(&fb));
 }
 
-void test_spiSendAddress_given_segment_510_should_send_64_and_return_0_if_ACK_is_received()
+void test_spiSendAddressSegment_given_segment_510_should_send_64_and_return_0_if_ACK_is_received()
 {
 	FlashBuffer fb;
 	fb.segment = 510;
@@ -236,7 +236,7 @@ void test_spiSendAddress_given_segment_510_should_send_64_and_return_0_if_ACK_is
 	SSPBUF = 0x5A ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
 
-	TEST_ASSERT_EQUAL(0,spiSendAddress(&fb));
+	TEST_ASSERT_EQUAL(0,spiSendAddressSegment(&fb));
 }
 
 
@@ -280,6 +280,17 @@ void test_readID_will_return_1_if_slave_target_is_found_and_match()
 	CloseSPI_Expect();
 	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
 	
+	WriteSPI_ExpectAndReturn(0x44,0);
+	Delay10TCYx_Expect(2);
+	SSPBUF = 0xA5 ;
+	ReadSPI_ExpectAndReturn(SSPBUF);
+
+	CloseSPI_Expect();
+	Delay10TCYx_Expect(1);
+	
+	CloseSPI_Expect();
+	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
+	
 	WriteSPI_ExpectAndReturn(0x00,0);
 	Delay10TCYx_Expect(2);
 	SSPBUF = 0x12 ;
@@ -297,9 +308,20 @@ void test_readID_will_return_0_if_received_not_0x12()
 	CloseSPI_Expect();
 	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
 	
+	WriteSPI_ExpectAndReturn(0x44,0);
+	Delay10TCYx_Expect(2);
+	SSPBUF = 0xA5 ;
+	ReadSPI_ExpectAndReturn(SSPBUF);
+
+	CloseSPI_Expect();
+	Delay10TCYx_Expect(1);
+	
+	CloseSPI_Expect();
+	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
+	
 	WriteSPI_ExpectAndReturn(0x00,0);
 	Delay10TCYx_Expect(2);
-	SSPBUF = 0x11 ;
+	SSPBUF = 0x22 ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
 	
 	CloseSPI_Expect();
@@ -326,8 +348,7 @@ void test_checkACK_will_return_0_if_the_data_passed_in_is_not_ACK()
 void test_spiSendConfig_and_return_1_if_OK()
 {
 	uint8 data[64] = {1,2,3,4,5,6};
-	FlashBuffer fb ;
-	fb.segment = 10;
+	uint32 address = 0x312345;
 
 	CloseSPI_Expect();
 	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
@@ -347,17 +368,17 @@ void test_spiSendConfig_and_return_1_if_OK()
 	CloseSPI_Expect();
 	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
 	
-	WriteSPI_ExpectAndReturn(0x80,0);
+	WriteSPI_ExpectAndReturn(0x45,0);
 	Delay10TCYx_Expect(2);
 	SSPBUF = 0xA5 ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
 	
-	WriteSPI_ExpectAndReturn(0x02,0);
+	WriteSPI_ExpectAndReturn(0x23,0);
 	Delay10TCYx_Expect(2);
 	SSPBUF = 0xA5 ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
 	
-	WriteSPI_ExpectAndReturn(0x00,0);
+	WriteSPI_ExpectAndReturn(0x31,0);
 	Delay10TCYx_Expect(2);
 	SSPBUF = 0xA5 ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
@@ -369,7 +390,7 @@ void test_spiSendConfig_and_return_1_if_OK()
 	CloseSPI_Expect();
 	OpenSPI_Expect(SPI_FOSC_64,MODE_01,SMPMID);
 	
-	WriteSPI_ExpectAndReturn(6,0);
+	WriteSPI_ExpectAndReturn(1,0);
 	Delay10TCYx_Expect(2);
 	SSPBUF = 0xA5 ;
 	ReadSPI_ExpectAndReturn(SSPBUF);
@@ -377,6 +398,6 @@ void test_spiSendConfig_and_return_1_if_OK()
 	CloseSPI_Expect();
 	Delay10TCYx_Expect(1);
 	
-	TEST_ASSERT_EQUAL(1,spiSendConfig(data,&fb));
+	TEST_ASSERT_EQUAL(1,spiSendConfig(address,data));
 
 }

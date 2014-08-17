@@ -1,6 +1,7 @@
 #include "Utils.h"
-#include "DelayedWrite.h"
 #include "FlashBuffer.h"
+#include "spiMaster.h"
+#include "DelayedWrite.h"
 
 /**
  * Copy data from the UART input buffer to the slave flush buffer
@@ -14,29 +15,52 @@
  *
  *
  */
-void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb)
+void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,uint8 *previousSegment,uint8 *memory)
 {
-	uint8 shift ;
-	uint8 dataStartPoint = 0;
-	uint32 newAdd;
-	if ( address/64 == fb->segment)
+	uint8 shift,dataStartPoint = 0;
+	uint32 newAddress;
+	fb->segment = address / 64 ;
+
+	if (address >= 0x300000) //Address 0x300000 contains configuration register
 		{
-			if ((address + dataCount)/64 == fb->segment )
+			spiSendConfig(address,data);// Different method of sending data and programming required
+			return ; // quit function
+		}
+
+	if (*memory == 0 ) //To be used to store the previous segment accessed
+	{
+		*previousSegment = fb->segment ;
+		while(!flashBufferRead(fb)); //Read the segment from the slave
+		*memory = 1; //And do not update previousSegment
+	}
+
+	if ( fb->segment == *previousSegment) //Check if writing in the same segment
+		{
+			if ((address + dataCount)/64 == fb->segment )//Check if cross segment occurs
 				dataToBuffer(address,data,dataCount,dataStartPoint,fb);
 			else
 				{
-					shift = 64 - (fb->offset) ;
-					dataToBuffer(address,data,shift,dataStartPoint,fb);
-					while(!flashBufferFlush(fb));
-					fb->offset = 0 ;
-					fb->segment ++ ;
-					newAdd = fb->segment * 64 ;
-					dataToBuffer(newAdd,data,dataCount-shift,dataStartPoint+shift,fb);
+					shift = 64 - (fb->offset) ; //To calculate how many available bytes left in the flash buffer
+					dataToBuffer(address,data,shift,dataStartPoint,fb); //Only copy exact amount of data to fit the flash buffer first
+					while(!flashBufferFlush(fb)); //Flush the buffer until success
+
+					fb->offset = 0 ; //Reset flash buffer offset to 0
+					fb->segment ++ ; //Increment the segment
+					newAddress = fb->segment * 64 ; // Store the new address since segment has incremented
+					*memory = 0 ; //Enable to store the new previous segment
+
+					while(!flashBufferRead(fb)); // Read the segment from the slave
+					dataToBuffer(newAddress,data,dataCount-shift,dataStartPoint+shift,fb); // Copy remaining data to the flash buffer
+																						   // dataCount - shift ->some of the data was copied previously
+																						   // dataStartPoint + shift -> prevent copying copied data
 				}
 		}
 	else
 		{
-			while(!flashBufferFlush(fb));
+			while(!flashBufferFlush(fb)); 
+			while(!flashBufferRead(fb));
+			fb->offset = 0 ; 
+			*previousSegment = address/64 ;
 			dataToBuffer(address,data,dataCount,dataStartPoint,fb);
 		}
 
@@ -45,7 +69,7 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb)
 
 
 /**
- * Copy data from the UART input buffer to the slave flush buffer only
+ * Copy data to the slave flash buffer only
  *
  * Input : address		is the starting address of the data going to be written
  *		   data			contain the pointer to data array going to be written
