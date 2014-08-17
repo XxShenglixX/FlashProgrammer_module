@@ -6,6 +6,11 @@
 #define Write 0x11
 #define Read 0x22
 
+#ifdef __GNUC__
+uint8 slaveBuffer[64];
+#else
+#endif
+
 /**
  * Get last address of the flash buffer based on the segment and offset
  *
@@ -61,7 +66,9 @@ uint8 flashBufferFlush(FlashBuffer *fb)
  */
 uint8 flashBufferRead(FlashBuffer *fb)
 {
+	#ifndef __GNUC__
 	uint8 slaveBuffer[64];
+	#endif
 	fb->buffer = slaveBuffer ;
 
 

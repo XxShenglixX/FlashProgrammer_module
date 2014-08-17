@@ -42,14 +42,14 @@ void test_flashBufferGetLastAddress_given_segement_minus1_will_return_0xFFFFFFFF
 
 void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_spiSendAddress_spiSendData_spiCheckStatus_and_given_all_pass_will_return_1()
 {
-	uint8 data[64] = {1,2,3,4,5,6,7,8,9},i;
-	uint8 addressArray[3] = {10,11,12};	
+	uint8 data[64] = {1,2,3,4,5,6,7,8,9};
+	uint8 addressArray[3] = {10,11,12};
 	uint8 acknack;
 	FlashBuffer fb;
 	fb.segment = 20;
 	fb.buffer = data;
-	
-	
+
+
 	spiSendCommand_ExpectAndReturn(Write,1);
 	spiSendAddressSegment_ExpectAndReturn(&fb,1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
@@ -62,13 +62,13 @@ void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_spiSendAdd
 
 void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_given_spiSendCommand_fail_will_return_0()
 {
-	uint8 data[64] = {1,2,3,4,5,6,7,8,9},i;
-	uint8 addressArray[3] = {10,11,12};	
+	uint8 data[64] = {1,2,3,4,5,6,7,8,9};
+	uint8 addressArray[3] = {10,11,12};
 	uint8 acknack;
 	FlashBuffer fb;
 	fb.segment = 20;
 	fb.buffer = data;
-	
+
 	spiSendCommand_ExpectAndReturn(Write,0);
 
 
@@ -78,24 +78,38 @@ void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_given_spiS
 
 void test_flashBufferFlush_given_segment_20__given_spiReceiveStatus_fail_will_loop_until_pass()
 {
-	uint8 data[64] = {1,2,3,4,5,6,7,8,9},i;
-	uint8 addressArray[3] = {10,11,12};	
+	uint8 data[64] = {1,2,3,4,5,6,7,8,9};
+	uint8 addressArray[3] = {10,11,12};
 	uint8 acknack;
 	FlashBuffer fb;
 	fb.segment = 20;
 	fb.buffer = data;
-	
-	
+
+
 	spiSendCommand_ExpectAndReturn(Write,1);
 	spiSendAddressSegment_ExpectAndReturn(&fb,1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
-	
+
 	spiReceiveStatus_ExpectAndReturn(0);
 	Delay10TCYx_Expect(2);
 	spiReceiveStatus_ExpectAndReturn(0);
 	Delay10TCYx_Expect(2);
 	spiReceiveStatus_ExpectAndReturn(1);
-	
+
 	TEST_ASSERT_EQUAL(1,flashBufferFlush(&fb));
 
+}
+
+
+void test_flashBufferRead_will_call_spiSendCommand_spiSendAddressSegment_and_spiReceiveData()
+{
+
+	FlashBuffer fb;
+	fb.segment = 1;
+
+	spiSendCommand_ExpectAndReturn(Read,1);
+	spiSendAddressSegment_ExpectAndReturn(&fb,1);
+	spiReceiveData_ExpectAndReturn(slaveBuffer,64,1);
+
+	flashBufferRead(&fb);
 }
