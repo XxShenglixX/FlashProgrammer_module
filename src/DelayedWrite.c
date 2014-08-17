@@ -57,9 +57,9 @@ void bufferHandler(uint32 address,uint8* data,uint8 dataCount,FlashBuffer *fb,ui
 		}
 	else
 		{
-			while(!flashBufferFlush(fb)); 
+			while(!flashBufferFlush(fb));
 			while(!flashBufferRead(fb));
-			fb->offset = 0 ; 
+			fb->offset = 0 ;
 			*previousSegment = address/64 ;
 			dataToBuffer(address,data,dataCount,dataStartPoint,fb);
 		}

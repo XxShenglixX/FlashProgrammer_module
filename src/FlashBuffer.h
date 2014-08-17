@@ -2,7 +2,7 @@
 #define FlashBuffer_H
 #include "Utils.h"
 
-typedef struct 
+typedef struct
 {
 	uint8 *buffer ;
 	uint8 offset ;

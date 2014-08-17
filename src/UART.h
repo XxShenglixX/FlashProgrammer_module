@@ -26,7 +26,7 @@ void uartSetup(int baudrate);
 // {
 	// State state;
 	// uint32 i;
-	// uint32 length;	
+	// uint32 length;
 // } TLV_FSM;
 
 #endif // UART_H

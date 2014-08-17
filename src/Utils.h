@@ -6,8 +6,8 @@
 	typedef int int32;
 	typedef short int int16;
 	typedef char int8 ;
-	
-#else	
+
+#else
 
 	typedef unsigned long uint32;
 	typedef unsigned short uint16;

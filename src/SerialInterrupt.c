@@ -25,7 +25,7 @@ void chk_SerialISR(void)
 void My_HiVect_Int(void)
 {
 	#ifdef __GNUC__
-	#else 
+	#else
 	_asm GOTO chk_SerialISR _endasm
 	#endif
 }
@@ -35,9 +35,9 @@ void SerialISR(void)
 {
 	static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
 	byteReceive = uartGetByte();
-	
+
 	//printf("tlvFrameReady: %x\n", tlvFrameReady);
-	
+
 	if(tlvFrameReady == BUFFER0_AVAILABLE || tlvFrameReady == BOTH_AVAILABLE)
 	{
 		bufferIndex = 0;
