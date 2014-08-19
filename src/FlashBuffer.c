@@ -41,12 +41,17 @@ uint8 flashBufferFlush(FlashBuffer *fb)
 	if(!spiSendCommand(Write))
 		return 0 ;
 
+	Delay10TCYx(1);
+
  	 if(!spiSendAddressSegment(fb))
 		return 0 ;
+
+	Delay10TCYx(1);
 
 	 if(!spiSendData(fb->buffer,64,0))
 		return 0;
 
+	Delay10TCYx(100);
 	while(!spiReceiveStatus())
 	{
 		Delay10TCYx(2);
@@ -75,8 +80,12 @@ uint8 flashBufferRead(FlashBuffer *fb)
 	if(!spiSendCommand(Read))
 		return 0 ;
 
+	Delay10TCYx(1);
+
  	 if(!spiSendAddressSegment(fb))
 		return 0 ;
+
+	Delay10TCYx(100);
 
 	 if(!spiReceiveData(slaveBuffer,64))
 		return 0;

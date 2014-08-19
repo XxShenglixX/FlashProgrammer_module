@@ -51,8 +51,11 @@ void test_flashBufferFlush_given_segment_20__will_call_spiSendCommand_spiSendAdd
 
 
 	spiSendCommand_ExpectAndReturn(Write,1);
+	Delay10TCYx_Expect(1);
 	spiSendAddressSegment_ExpectAndReturn(&fb,1);
+	Delay10TCYx_Expect(1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
+	Delay10TCYx_Expect(100);
 	spiReceiveStatus_ExpectAndReturn(1);
 
 
@@ -87,8 +90,11 @@ void test_flashBufferFlush_given_segment_20__given_spiReceiveStatus_fail_will_lo
 
 
 	spiSendCommand_ExpectAndReturn(Write,1);
+	Delay10TCYx_Expect(1);
 	spiSendAddressSegment_ExpectAndReturn(&fb,1);
+	Delay10TCYx_Expect(1);
 	spiSendData_ExpectAndReturn(fb.buffer,64,0,1);
+	Delay10TCYx_Expect(100);
 
 	spiReceiveStatus_ExpectAndReturn(0);
 	Delay10TCYx_Expect(2);
@@ -107,8 +113,11 @@ void test_flashBufferRead_will_call_spiSendCommand_spiSendAddressSegment_and_spi
 	FlashBuffer fb;
 	fb.segment = 1;
 
+
 	spiSendCommand_ExpectAndReturn(Read,1);
+	Delay10TCYx_Expect(1);
 	spiSendAddressSegment_ExpectAndReturn(&fb,1);
+	Delay10TCYx_Expect(100);
 	spiReceiveData_ExpectAndReturn(slaveBuffer,64,1);
 
 	flashBufferRead(&fb);
