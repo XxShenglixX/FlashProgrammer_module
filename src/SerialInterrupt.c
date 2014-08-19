@@ -1,5 +1,5 @@
 #include "SerialInterrupt.h"
-#include "IntelHex16Opearation.h"
+#include "IntelHex16Operation.h"
 #include "rs232.h"
 #include "p18f4520.h"
 #include "UART.h"

@@ -1,5 +1,5 @@
-#ifndef IntelHex16Opearation_H
-#define IntelHex16Opearation_H
+#ifndef IntelHex16Operation_H
+#define IntelHex16Operation_H
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -41,4 +41,4 @@ void sendTLV(TLV *tlv);
 
 // void tlvProtocol();
 
-#endif // IntelHex16Opearation_H
+#endif // IntelHex16Operation_H
