@@ -86,6 +86,14 @@ uint8 flashBufferRead(FlashBuffer *fb)
 }
 
 
+/**
+ * Check if FlashBuffer buffer points to nothing
+ *
+ * Input : fb contains the segment address and the pointer to the flash buffer
+ *
+ * Ouput : 1 for NULL
+ *		   0 for not true
+ */
 uint8 isFlashBufferNull(FlashBuffer *fb)
 {
 	if(fb->buffer == 0)
