@@ -1,14 +1,11 @@
 #include "SerialInterrupt.h"
 #include "IntelHex16Operation.h"
-#include "rs232.h"
-#include "p18f4520.h"
+#include "18c.h"
 #include "UART.h"
 #include "Utils.h"
 #include "DelayedWrite.h"
 #include "FlashBuffer.h"
 #include <stdio.h>
-
-#pragma config OSC = INTIO67, WDT = OFF, DEBUG = ON, LVP = OFF
 
 uint8 tlvBuffer[160];
 
@@ -38,7 +35,7 @@ void SerialISR(void)
 {
 	static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
 	// TLV tlv = {{&tlvBuffer[0], &tlvBuffer[80]}, 3};
-	char *ptr;
+	uint8 *ptr;
 
 	ptr = getNonReadyTLVframe(&tlv);
 	//byteReceive = uartGetByte();

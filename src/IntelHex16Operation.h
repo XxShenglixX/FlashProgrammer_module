@@ -10,7 +10,7 @@ typedef struct
 {
 	char type;
 	char length;
-	char value[0];
+	char value[1];
 } TLV;
 
 typedef struct

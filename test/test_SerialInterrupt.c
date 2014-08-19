@@ -1,6 +1,5 @@
 #include "unity.h"
 #include "IntelHex16Operation.h"
-#include "rs232.h"
 #include "SerialInterrupt.h"
 #include "mock_UART.h"
 #include "p18f4520.h"

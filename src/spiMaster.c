@@ -1,4 +1,4 @@
-#include "p18f4520.h"
+#include "18c.h"
 #include "spi.h"
 #include "delays.h"
 
