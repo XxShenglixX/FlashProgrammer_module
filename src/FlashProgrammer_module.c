@@ -32,17 +32,26 @@ void tlvDecode(uint32 *address, uint8 *length, uint8 *data, uint8 *dataOnly)
 	// if(tlvFrameReady == 0x10)
 	// {
 		*address = (uint32)(data[5]) << 24 | (uint32)(data[4]) << 16 | (uint32)(data[3]) << 8 | (uint32)(data[2]);
-		*length = data[1];
+		*length = data[1] - 5;
 
-		for(i = 6; i < (*length-5) + 6; i+=2)
+		for(i = 0; i < *length; i+=2)
 		{
-			dataOnly[i-6] = data[i+1];
-			dataOnly[i-5] = data[i];
+			if(*length == 1)
+				dataOnly[i] = data[i+6];
+			else
+			{
+				dataOnly[i] = data[i+6];
+				dataOnly[i+1] = data[i+7];
+			}
 			// temp = data[i+1];
 			// data[i+1] = data[i];
 			// data[i] = temp;
 		}
-		dataOnly[i-6] = 0;
+		
+		if(*length == 1)
+			dataOnly[i-1] = 0;
+		else
+			dataOnly[i] = 0;
 	// }
 	/* else if(tlvFrameReady == 0x01)
 	{
