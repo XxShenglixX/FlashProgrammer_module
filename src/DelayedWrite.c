@@ -4,7 +4,7 @@
 #include "DelayedWrite.h"
 
 /**
- * Copy data from the UART input buffer to the slave flush buffer
+ * Copy data from the UART input buffer to the slave flash buffer
  * and perform flush if cross segment occurs or different segment between the slave buffer and UART input buffer
  *
  *
