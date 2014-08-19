@@ -8,11 +8,12 @@
 #include <stdio.h>
 
 uint8 tlvBuffer[160];
+uint8 tlvFrame;
 
 uint8 byteReceive;
 uint8 bufferIndex;
 
-TLV_Buffer tlv = {{&tlvBuffer[0], &tlvBuffer[80]}};
+TLV_Buffer tlvBuf = {{&tlvBuffer[0], &tlvBuffer[80]}};
 
 #pragma interrupt chk_SerialISR
 void chk_SerialISR(void)
@@ -34,16 +35,16 @@ void My_HiVect_Int(void)
 void SerialISR(void)
 {
 	static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
-	// TLV tlv = {{&tlvBuffer[0], &tlvBuffer[80]}, 3};
+	// TLV tlvBuffer = {{&tlvBuffer[0], &tlvBuffer[80]}, 3};
 	uint8 *ptr;
 
-	ptr = getNonReadyTLVframe(&tlv);
+	ptr = getNonReadyTLVframe(&tlvBuf);
 	//byteReceive = uartGetByte();
 
 	if(ptr == 0)
 		uartSendByte(NACK);
 	else
-		tlvReceiveFSM(&fsm, &tlv, ptr);
+		tlvReceiveFSM(&fsm, &tlvBuf, ptr);
 
 	/*if(tlvFrameReady == BUFFER0_AVAILABLE || tlvFrameReady == BOTH_AVAILABLE)
 	{
@@ -61,7 +62,14 @@ void SerialISR(void)
 		uartSendByte(NACK);*/
 }
 
-void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlv, uint8 *ptr)
+void initTlvBuffer(TLV_Buffer *tlvBuf)
+{
+	tlvBuf->bufferPointers[0] = &tlvBuffer[0];
+	tlvBuf->bufferPointers[1] = &tlvBuffer[80];
+	tlvBuf->readyFrame = 0;
+}
+
+void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 {
 	switch(fsm->state)
 	{
@@ -98,7 +106,7 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlv, uint8 *ptr)
 			{
 				ptr[fsm->i] = uartGetByte();
 				//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-				setTLVframe(tlv, ptr);
+				setTLVframe(tlvBuf, ptr);
 				//if(bufferIndex == 0)
 					//tlvFrameReady = tlvFrameReady & 0xf0;
 				//else
@@ -119,49 +127,59 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlv, uint8 *ptr)
 		fsm->i++;
 }
 
-uint8 *getNonReadyTLVframe(TLV_Buffer *tlv)
+uint8 *getNonReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	if((tlv->readyFrame & 0x3) == 3 || (tlv->readyFrame & 0x1) == 1)
-		return tlv->bufferPointers[0];
-	else if((tlv->readyFrame & 0x2) == 2)
-		return tlv->bufferPointers[1];
+	/* if(tlvBuf->readyFrame == 0 && tlvFrame == 0x11)
+		return tlvBuf->bufferPointers[0];
+	else if((tlvBuf->readyFrame & 0x1) == 1 && tlvFrame == 0x01)
+		return tlvBuf->bufferPointers[0];
+	else if((tlvBuf->readyFrame & 0x1) == 1 && tlvFrame == 0x10)
+		return tlvBuf->bufferPointers[1];
+	else if((tlvBuf->readyFrame & 0x2) == 2)
+		return 0; */
+
+	if((tlvBuf->readyFrame & 0x1) == 3 || (tlvBuf->readyFrame & 0x1) == 1)
+		return tlvBuf->bufferPointers[0];
+	else if((tlvBuf->readyFrame & 0x2) == 2)
+		return tlvBuf->bufferPointers[1];
 	else
 		return 0;
 }
 
-void setTLVframe(TLV_Buffer *tlv, uint8 *ptrTLV)
+void setTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
 {
+
 	if(ptrTLV == &tlvBuffer[0])
 	{
-		// ptr = tlv->bufferPointers[1];
-		tlv->readyFrame = tlv->readyFrame & 0x2;
+		// ptr = tlvBuffer->bufferPointers[1];
+		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x2;
 	}
 	else
 	{
-		// ptr = tlv->bufferPointers[0];
-		tlv->readyFrame = tlv->readyFrame & 0x1;
+		// ptr = tlvBuffer->bufferPointers[0];
+		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x1;
 	}
 }
 
-uint8 *getReadyTLVframe(TLV_Buffer *tlv)
+uint8 *getReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	if((tlv->readyFrame & 0x1) == 1)
-		return tlv->bufferPointers[1];
-	else if((tlv->readyFrame & 0x2) == 2)
-		return tlv->bufferPointers[0];
-	else if((tlv->readyFrame & 0x0) == 0)
-		return tlv->bufferPointers[0];
+	if((tlvBuf->readyFrame & 0x1) == 1)
+		return tlvBuf->bufferPointers[1];
+	else if((tlvBuf->readyFrame & 0x2) == 2)
+		return tlvBuf->bufferPointers[0];
+	else if((tlvBuf->readyFrame & 0x0) == 0)
+		return tlvBuf->bufferPointers[0];
 }
 
-void releaseTLVframe(TLV_Buffer *tlv, uint8 *ptrTLV)
+void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
 {
 	if(ptrTLV == &tlvBuffer[0])
 	{
-		tlv->readyFrame = tlv->readyFrame | 0x1;
+		tlvBuf->readyFrame = tlvBuf->readyFrame | 0x1;
 	}
 	else
 	{
-		tlv->readyFrame = tlv->readyFrame | 0x2;
+		tlvBuf->readyFrame = tlvBuf->readyFrame | 0x2;
 	}
 }
 
@@ -198,14 +216,15 @@ uint8 *getData(uint8 *ptrTLV)
 		return NULL;
 }
 
-void decodeCommand(FlashBuffer *fb, uint8* ptrTLV)
+void decodeCommand(FlashBuffer *fb, uint8 *ptrTLV)
 {
+	// printf("ptrTLV: %d\n", ptrTLV[0]);
 	bufferHandler(getAddress(ptrTLV), getData(ptrTLV), getLength(ptrTLV), fb);
 }
 
-uint8 isReadyFrameAvailable(TLV_Buffer *tlv)
+uint8 isReadyFrameAvailable(TLV_Buffer *tlvBuf)
 {
-	if((tlv->readyFrame & 0x3) == 3)
+	if((tlvBuf->readyFrame & 0x3) == 3)
 		return 0;
 
 	return 1;

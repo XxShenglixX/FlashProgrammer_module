@@ -103,7 +103,7 @@ void crossSegmentHandler(uint32 address,uint8* data,uint8 length,uint8 dataStart
 
 
 /**
- * Handle cases when different segment of holding flash buffer and segment to write occrus
+ * Handle cases when different segment of holding flash buffer and segment to write occurs
  *
 * Input : address			is the starting address of the data going to be written
  *		  data				contain the pointer to data array going to be written

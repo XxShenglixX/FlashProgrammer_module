@@ -26,6 +26,7 @@ typedef struct
 //void interruptMain(void);
 void chk_SerialISR(void);
 void SerialISR(void);
+void initTlvBuffer(TLV_Buffer *tlvBuf);
 void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlv, uint8 *ptr);
 uint8 *getReadyTLVframe(TLV_Buffer *tlv);
 void setTLVframe(TLV_Buffer *tlv, uint8 *ptrTLV);
@@ -37,6 +38,5 @@ uint8 getLength(uint8 *ptrTLV);
 
 void decodeCommand(FlashBuffer *fb, uint8* ptrTLV);
 uint8 isReadyFrameAvailable(TLV_Buffer *tlv);
-// void tlvDecode(uint32 *address, uint8 *length, uint8 *data, uint8 *dataOnly);
 
 #endif // SerialInterrupt_H
