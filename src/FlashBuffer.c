@@ -84,3 +84,12 @@ uint8 flashBufferRead(FlashBuffer *fb)
 
 	return 1 ;
 }
+
+
+uint8 isFlashBufferNull(FlashBuffer *fb)
+{
+	if(fb->buffer == 0)
+		return 1;
+
+	return 0;
+}

@@ -113,3 +113,24 @@ void test_flashBufferRead_will_call_spiSendCommand_spiSendAddressSegment_and_spi
 
 	flashBufferRead(&fb);
 }
+
+
+void test_isFlashBufferNull_will_return_1_is_fb_buffer_points_to_NULL()
+{
+	FlashBuffer fb;
+	fb.buffer = NULL;
+
+	TEST_ASSERT_EQUAL(1,isFlashBufferNull(&fb));
+
+}
+
+void test_isFlashBufferNull_will_return_0_is_fb_buffer_points_to_something()
+{
+	uint8 data[64] = {1,2,3,4,5,6,7,8,9};
+	FlashBuffer fb;
+
+	fb.buffer = data;
+
+	TEST_ASSERT_EQUAL(0,isFlashBufferNull(&fb));
+}
+

@@ -12,4 +12,5 @@ typedef struct
 uint32 flashBufferGetLastAddress(FlashBuffer *fb);
 uint8 flashBufferFlush(FlashBuffer *fb);
 uint8 flashBufferRead(FlashBuffer *fb);
+uint8 isFlashBufferNull(FlashBuffer *fb);
 #endif // FlashBuffer_H
