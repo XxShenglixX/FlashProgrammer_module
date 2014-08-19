@@ -2,7 +2,7 @@
 #define FlashBuffer_H
 #include "Utils.h"
 
-typedef struct 
+typedef struct
 {
 	uint8 *buffer ;
 	uint8 offset ;
@@ -11,4 +11,6 @@ typedef struct
 
 uint32 flashBufferGetLastAddress(FlashBuffer *fb);
 uint8 flashBufferFlush(FlashBuffer *fb);
+uint8 flashBufferRead(FlashBuffer *fb);
+uint8 isFlashBufferNull(FlashBuffer *fb);
 #endif // FlashBuffer_H
