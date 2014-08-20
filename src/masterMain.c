@@ -24,8 +24,6 @@ extern TLV_Buffer tlvBuf;
 
 void main()
 {
-	uint8 *ptrTLV;
-
 	FlashBuffer fb;
 	fb.buffer = 0 ;
 	configureTarget();
@@ -34,10 +32,9 @@ void main()
 	uartSetup(BaudratePrescaler);
 	enableInterrupt();
 
-	while(1)
+	while(stopInterrupt !=0 && isReadyFrameAvailable(&tlvBuf) !=1)
 	{
-		writeProgram(&fb,&tlvBuf,&ptrTLV);
-
+		writeProgram(&fb,&tlvBuf);
 	}
 
 

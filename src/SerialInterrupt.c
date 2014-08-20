@@ -78,7 +78,7 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 			//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
 			//uartSendByte(bufferPointers[bufferIndex][fsm->i]);
 			//uartSendByte(ACK);
-			if(byteReceive == 6)
+			if(ptr[fsm->i] == 6)
 				stopInterrupt = 0;
 			fsm->state = WAIT_FOR_LENGTH;
 			//printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
