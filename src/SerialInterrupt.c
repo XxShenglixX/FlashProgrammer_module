@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 uint8 tlvBuffer[160];
-uint8 tlvFrame;
 
 uint8 byteReceive;
 uint8 bufferIndex;
@@ -66,7 +65,7 @@ void initTlvBuffer(TLV_Buffer *tlvBuf)
 {
 	tlvBuf->bufferPointers[0] = &tlvBuffer[0];
 	tlvBuf->bufferPointers[1] = &tlvBuffer[80];
-	tlvBuf->readyFrame = 0;
+	tlvBuf->readyFrame = 3;
 }
 
 void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
@@ -129,21 +128,28 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 
 uint8 *getNonReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	/* if(tlvBuf->readyFrame == 0 && tlvFrame == 0x11)
+	if(!isFrame0Ready(tlvBuf->readyFrame))
 		return tlvBuf->bufferPointers[0];
-	else if((tlvBuf->readyFrame & 0x1) == 1 && tlvFrame == 0x01)
-		return tlvBuf->bufferPointers[0];
-	else if((tlvBuf->readyFrame & 0x1) == 1 && tlvFrame == 0x10)
-		return tlvBuf->bufferPointers[1];
-	else if((tlvBuf->readyFrame & 0x2) == 2)
-		return 0; */
-
-	if((tlvBuf->readyFrame & 0x1) == 3 || (tlvBuf->readyFrame & 0x1) == 1)
-		return tlvBuf->bufferPointers[0];
-	else if((tlvBuf->readyFrame & 0x2) == 2)
+	else if(!isFrame1Ready(tlvBuf->readyFrame))
 		return tlvBuf->bufferPointers[1];
 	else
-		return 0;
+		return NULL;
+}
+
+uint8 isFrame0Ready(uint8 readyFlag)
+{
+	if((readyFlag & 0x1) == 0)
+		return 1;
+
+	return 0;
+}
+
+uint8 isFrame1Ready(uint8 readyFlag)
+{
+	if((readyFlag & 0x2) == 0)
+		return 1;
+
+	return 0;
 }
 
 void setTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
@@ -151,24 +157,22 @@ void setTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
 
 	if(ptrTLV == &tlvBuffer[0])
 	{
-		// ptr = tlvBuffer->bufferPointers[1];
 		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x2;
 	}
 	else
 	{
-		// ptr = tlvBuffer->bufferPointers[0];
 		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x1;
 	}
 }
 
 uint8 *getReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	if((tlvBuf->readyFrame & 0x1) == 1)
+	if(isFrame0Ready(tlvBuf->readyFrame))
+		return tlvBuf->bufferPointers[0];
+	else if(isFrame1Ready(tlvBuf->readyFrame))
 		return tlvBuf->bufferPointers[1];
-	else if((tlvBuf->readyFrame & 0x2) == 2)
-		return tlvBuf->bufferPointers[0];
-	else if((tlvBuf->readyFrame & 0x0) == 0)
-		return tlvBuf->bufferPointers[0];
+	else
+		return NULL;
 }
 
 void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
@@ -222,33 +226,10 @@ void decodeCommand(FlashBuffer *fb, uint8 *ptrTLV)
 	bufferHandler(getAddress(ptrTLV), getData(ptrTLV), getLength(ptrTLV), fb);
 }
 
-uint8 isReadyFrameAvailable(TLV_Buffer *tlvBuf)
+uint8 isAnyFrameReady(TLV_Buffer *tlvBuf)
 {
-	if((tlvBuf->readyFrame & 0x3) == 3)
-		return 0;
+	if(isFrame0Ready(tlvBuf->readyFrame) || isFrame1Ready(tlvBuf->readyFrame))
+		return 1;
 
-	return 1;
+	return 0;
 }
-/* void tlvDecode(uint32 *address, uint8 *length, uint8 *data, uint8 *dataOnly)
-{
-	uint8 i;
-
-	*address = (uint32)(data[5]) << 24 | (uint32)(data[4]) << 16 | (uint32)(data[3]) << 8 | (uint32)(data[2]);
-	*length = data[1] - 5;
-
-	for(i = 0; i < *length; i+=2)
-	{
-		if(*length == 1)
-			dataOnly[i] = data[i+6];
-		else
-		{
-			dataOnly[i] = data[i+6];
-			dataOnly[i+1] = data[i+7];
-		}
-	}
-
-	if(*length == 1)
-		dataOnly[i-1] = 0;
-	else
-		dataOnly[i] = 0;
-} */

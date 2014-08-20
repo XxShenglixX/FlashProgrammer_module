@@ -15,7 +15,7 @@ extern uint8 tlvBuffer[160];
 void writeProgram(FlashBuffer *fb, TLV_Buffer *tlv)
 {
 	uint8 *ptrTLV;
-	if(isReadyFrameAvailable(tlv))
+	if(isAnyFrameReady(tlv))
 	{
 		ptrTLV = getReadyTLVframe(tlv);
 		decodeCommand(fb, ptrTLV);

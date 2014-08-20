@@ -5,6 +5,8 @@
 #include "FlashBuffer.h"
 
 #define stopInterrupt INTCONbits.GIE
+#define FRAME0_NOT_READY 1
+#define FRAME1_NOT_READY 2
 
 typedef enum {WAIT_FOR_TYPE,
 			  WAIT_FOR_LENGTH,
@@ -14,7 +16,7 @@ typedef struct
 {
 	State state;
 	uint32 i;
-	uint32 length;	
+	uint32 length;
 } TLV_FSM;
 
 typedef struct
@@ -32,12 +34,14 @@ uint8 *getReadyTLVframe(TLV_Buffer *tlv);
 void setTLVframe(TLV_Buffer *tlv, uint8 *ptrTLV);
 uint8 *getNonReadyTLVframe(TLV_Buffer *tlv);
 void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV);
+uint8 isFrame0Ready(uint8 readyFlag);
+uint8 isFrame1Ready(uint8 readyFlag);
 
 uint32 getAddress(uint8 *ptrTLV);
 uint8 *getData(uint8 *ptrTLV);
 uint8 getLength(uint8 *ptrTLV);
 
 void decodeCommand(FlashBuffer *fb, uint8* ptrTLV);
-uint8 isReadyFrameAvailable(TLV_Buffer *tlv);
+uint8 isAnyFrameReady(TLV_Buffer *tlvBuf);
 
 #endif // SerialInterrupt_H
