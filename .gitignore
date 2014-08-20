@@ -1,5 +1,7 @@
 build/*
+MPLAB/*.hex
 MPLAB/*.map
 MPLAB/*.o
 MPLAB/*.lst
+MPLAB/*.cof
 !build/README.txt

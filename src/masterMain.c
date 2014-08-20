@@ -15,7 +15,7 @@
 
 #define enableInterrupt() do{					\
 						INTCONbits.PEIE = 1;	\
-						INTCONbits.GIE = 1;	\
+						INTCONbits.GIE = 1;		\
 					}while(0)
 					
 #pragma config OSC = INTIO67 , PWRT = ON , WDT = OFF , DEBUG = ON , LVP =OFF
@@ -30,9 +30,12 @@ void main()
 	stopTarget();
 	
 	uartSetup(BaudratePrescaler);
+	initTlvBuffer(&tlvBuf);
 	enableInterrupt();
 
-	while(stopInterrupt !=0 && isReadyFrameAvailable(&tlvBuf) !=1)
+	tlvBuf.readyFrame = 3;
+
+	while(stopInterrupt !=0 && isAnyFrameReady(&tlvBuf) !=1)
 	{
 		writeProgram(&fb,&tlvBuf);
 	}

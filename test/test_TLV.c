@@ -79,7 +79,7 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_1(void)
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
 	writeProgram(&fb, &tlvBuf);
-	
+
 	TEST_ASSERT_EQUAL(3, tlvBuf.readyFrame);
 }
 
