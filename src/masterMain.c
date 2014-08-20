@@ -33,8 +33,6 @@ void main()
 	initTlvBuffer(&tlvBuf);
 	enableInterrupt();
 
-	tlvBuf.readyFrame = 3;
-
 	while(stopInterrupt !=0 && isAnyFrameReady(&tlvBuf) !=1)
 	{
 		writeProgram(&fb,&tlvBuf);
@@ -43,5 +41,3 @@ void main()
 
 	runTarget();
 }
-
-

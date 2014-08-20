@@ -1,4 +1,4 @@
-S#include <stdio.h>
+#include <stdio.h>
 #include "unity.h"
 #include "CustomTypeAssertion.h"
 
