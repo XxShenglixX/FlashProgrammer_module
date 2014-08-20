@@ -6,19 +6,35 @@
 #include "DelayedWrite.h"
 #include "Utils.h"
 #include "SerialInterrupt.h"
-#define JumpPin PORTDbits.RD3
-#define Baudrate 25
+#define configureTarget() TRISDbits.TRISD3 = 0 
+#define runTargetPin PORTDbits.RD3
+#define stopTarget() runTargetPin=0
+#define runTarget() runTargetPin=1
+#define BaudratePrescaler 25
 
-
+#define enableInterrupt() do{					\
+						INTCONbits.PEIE = 1;	\
+						INTCONbits.GIE = 1;	\
+					}while(0)
+					
 #pragma config OSC = INTIO67 , PWRT = ON , WDT = OFF , DEBUG = ON , LVP =OFF
 
 
 void main()
 {
 	FlashBuffer fb;
-	TRISDbits.TRISD3 = 0 ;
-	JumpPin = 0;
+	configureTarget();
+	stopTarget();
+	
+	uartSetup(BaudratePrescaler);
+	enableInterrupt();
+
+	if(isFlashBufferNull(&fb));
+		while(!flashBufferRead(&fb));
 
 
+
+	runTarget();
 }
+
 

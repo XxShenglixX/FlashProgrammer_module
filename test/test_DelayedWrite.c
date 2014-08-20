@@ -4,6 +4,8 @@
 #include "mock_FlashBuffer.h"
 #include "Utils.h"
 
+
+
 void setUp(void)
 {
 }
@@ -65,6 +67,22 @@ void test_dataToBuffer_given_address_0x10_dataCount_5_address_0x1A_dataCount_3_s
 	TEST_ASSERT_EQUAL(0,fb.segment);
 }
 
+void test_bufferHandler_given_segment_0_address_0_length_10_null_buffer_should_call_readBuffer_dataToBuffer_()
+{
+	uint32 address = 0;
+	uint8 length = 10, buffer[64] = {1,2,3,4,5,6,7,8,9,10};
+	uint8 data[20] = {11,12,13,14,15,16,17,18,19,20};
+
+	FlashBuffer fb;
+	fb.buffer = 0 ;
+	fb.segment = 0 ;
+
+	isFlashBufferNull_ExpectAndReturn(&fb,1);
+	flashBufferRead_ExpectAndReturn(&fb,1);
+	fb.buffer = buffer ;
+	bufferHandler(address,data,length,&fb);
+
+}
 
 void test_bufferHandler_given_segment_0_address_0_length_10_should_call_dataToBuffer_and_dont_read_and_flush_buffer()
 {
@@ -76,6 +94,7 @@ void test_bufferHandler_given_segment_0_address_0_length_10_should_call_dataToBu
 	fb.buffer = buffer ;
 	fb.segment = 0 ;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	bufferHandler(address,data,length,&fb);
 
 	TEST_ASSERT_EQUAL(0,fb.segment);
@@ -100,7 +119,7 @@ void test_bufferHandler_given_segment_0_address_60_length_5_should_call_dataToBu
 	fb.buffer = buffer ;
 	fb.segment = 0 ;
 
-
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,1);
 	flashBufferRead_ExpectAndReturn(&fb,1);
 	bufferHandler(address,data,length,&fb);
@@ -126,6 +145,7 @@ void test_bufferHandler_given_segment_0_address_64_length_2_should_call_flush_bu
 	fb.buffer = buffer ;
 	fb.segment = 0 ;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,1);
 	flashBufferRead_ExpectAndReturn(&fb,1);
 
@@ -152,6 +172,7 @@ void test_bufferHandler_given_segment_1_address_0x300000_should_call_flushBuffer
 	fb.buffer = buffer ;
 	fb.segment = 1 ;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,1);
 	spiSendConfig_ExpectAndReturn(address,data,1);
 

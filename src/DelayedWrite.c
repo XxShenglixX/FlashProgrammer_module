@@ -19,6 +19,13 @@ void bufferHandler(uint32 address,uint8* data,uint8 length,FlashBuffer *fb)
 {
 	uint8 dataStartPoint = 0;
 
+	if(isFlashBufferNull(fb))
+	{
+		fb->segment = address/64 ;
+		while(!flashBufferRead(fb));
+	}
+	
+	
 	if(isConfigData(address))
 	{
 		configurationDataHandler(address,data,fb);

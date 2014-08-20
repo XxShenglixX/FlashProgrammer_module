@@ -7,7 +7,7 @@
 #define Read 0x22
 
 #ifdef __GNUC__
-uint8 slaveBuffer[64];
+uint8 slaveBuffer[64] ;
 #else
 #endif
 
@@ -74,9 +74,9 @@ uint8 flashBufferRead(FlashBuffer *fb)
 	#ifndef __GNUC__
 	uint8 slaveBuffer[64];
 	#endif
+	
 	fb->buffer = slaveBuffer ;
-
-
+		
 	if(!spiSendCommand(Read))
 		return 0 ;
 

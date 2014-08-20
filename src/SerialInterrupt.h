@@ -31,6 +31,7 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlv, uint8 *ptr);
 uint8 *getReadyTLVframe(TLV_Buffer *tlv);
 void setTLVframe(TLV_Buffer *tlv, uint8 *ptrTLV);
 uint8 *getNonReadyTLVframe(TLV_Buffer *tlv);
+void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV);
 
 uint32 getAddress(uint8 *ptrTLV);
 uint8 *getData(uint8 *ptrTLV);

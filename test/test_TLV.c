@@ -47,6 +47,7 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_2(void)
 	fb.segment = 0;
 	fb.buffer = buffer;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
@@ -81,6 +82,7 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_1(void)
 	fb.segment = 0;
 	fb.buffer = buffer;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
@@ -124,6 +126,7 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 	fb.segment = 0;
 	fb.buffer = buffer;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
@@ -132,6 +135,7 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptrTLV);
 	TEST_ASSERT_EQUAL(1, tlvBuf.readyFrame);
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
@@ -166,6 +170,7 @@ void test_writeProgram_given_frame_1_as_configure_data_should_write_the_program_
 	fb.segment = 0;
 	fb.buffer = buffer;
 
+	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	spiSendConfig_ExpectAndReturn(0x00300001, &ptrTLV[6], 1);
 	// flashBufferRead_ExpectAndReturn(&fb, 1);
