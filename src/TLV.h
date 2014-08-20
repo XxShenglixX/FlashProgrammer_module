@@ -4,6 +4,6 @@
 #include "SerialInterrupt.h"
 #include "FlashBuffer.h"
 
-void writeProgram(FlashBuffer *fb, TLV_Buffer *tlv, uint8 **ptrPtrTLV);
+void writeProgram(FlashBuffer *fb, TLV_Buffer *tlv);
 
 #endif // TLV_H

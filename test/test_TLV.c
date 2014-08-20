@@ -28,19 +28,14 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_2(void)
 
 	uint8 buffer[64];
 	uint8 frame[] = {0x01, 0x07, 0x40, 0x00, 0x00, 0x00, 0x02, 0xe7, 0xff};
-	uint8 *ptrTLV, *TLVpointer, i;
+	uint8 *TLVpointer, i;
 
 	TLVpointer = tlvBuf.bufferPointers[1];
-	ptrTLV = tlvBuf.bufferPointers[0];
 
 	for(i = 0; i < 9; i++)
 	{
 		TLVpointer[i] = frame[i];
 	}
-
-	// printf("&tlv.bufferPointers[0]: %d\n", tlvBuf.bufferPointers[1]);
-	// printf("&tlvBuffer[80]: %d\n", &tlvBuffer[80]);
-	// printf("ptrTLV: %d\n", ptrTLV);
 
 	FlashBuffer fb;
 	fb.offset = 0;
@@ -51,9 +46,7 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_2(void)
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
-	writeProgram(&fb, &tlvBuf, &ptrTLV);
-	// printf("ptrTLV: %d\n", ptrTLV);
-	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[80], ptrTLV);
+	writeProgram(&fb, &tlvBuf);
 	TEST_ASSERT_EQUAL(3, tlvBuf.readyFrame);
 }
 
@@ -63,10 +56,9 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_1(void)
 
 	uint8 buffer[64];
 	uint8 frame[] = {0x01, 0x07, 0x40, 0x00, 0x00, 0x00, 0x02, 0xe7, 0xff};
-	uint8 *ptrTLV, *TLVpointer, i;
+	uint8 *TLVpointer, i;
 
 	TLVpointer = tlvBuf.bufferPointers[0];
-	ptrTLV = tlvBuf.bufferPointers[1];
 
 	for(i = 0; i < 9; i++)
 	{
@@ -86,9 +78,8 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_1(void)
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
-	writeProgram(&fb, &tlvBuf, &ptrTLV);
-	// printf("ptrTLV: %d\n", ptrTLV);
-	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptrTLV);
+	writeProgram(&fb, &tlvBuf);
+	
 	TEST_ASSERT_EQUAL(3, tlvBuf.readyFrame);
 }
 
@@ -99,7 +90,7 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 	uint8 buffer[64];
 	uint8 frame1[] = {0x01, 0x07, 0x40, 0x00, 0x00, 0x00, 0x02, 0xe7, 0xff};
 	uint8 frame2[] = {0x01, 0x0b, 0x80, 0x00, 0x00, 0x00, 0x02, 0xe7, 0x45, 0x18, 0x75, 0x27, 0xff};
-	uint8 *ptrTLV, *TLVpointer, i;
+	uint8 *TLVpointer, i;
 
 	TLVpointer = tlvBuf.bufferPointers[0];
 
@@ -115,8 +106,6 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 		TLVpointer[i] = frame2[i];
 	}
 
-	ptrTLV = tlvBuf.bufferPointers[0];
-
 	// printf("&tlv.bufferPointers[0]: %d\n", tlvBuf.bufferPointers[1]);
 	// printf("&tlvBuffer[80]: %d\n", &tlvBuffer[80]);
 	// printf("ptrTLV: %d\n", ptrTLV);
@@ -130,18 +119,16 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
-	writeProgram(&fb, &tlvBuf, &ptrTLV);
-	// printf("ptrTLV: %d\n", ptrTLV);
-	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptrTLV);
+	writeProgram(&fb, &tlvBuf);
+
 	TEST_ASSERT_EQUAL(1, tlvBuf.readyFrame);
 
 	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
 	flashBufferRead_ExpectAndReturn(&fb, 1);
 
-	writeProgram(&fb, &tlvBuf, &ptrTLV);
-	// printf("ptrTLV: %d\n", ptrTLV);
-	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[80], ptrTLV);
+	writeProgram(&fb, &tlvBuf);
+
 	TEST_ASSERT_EQUAL(3, tlvBuf.readyFrame);
 }
 
@@ -151,10 +138,9 @@ void test_writeProgram_given_frame_1_as_configure_data_should_write_the_program_
 
 	uint8 buffer[64];
 	uint8 frame[] = {0x01, 0x07, 0x01, 0x00, 0x30, 0x00, 0x02, 0xff};
-	uint8 *ptrTLV, *TLVpointer, i;
+	uint8 *TLVpointer, i;
 
 	TLVpointer = tlvBuf.bufferPointers[0];
-	ptrTLV = tlvBuf.bufferPointers[1];
 
 	for(i = 0; i < 9; i++)
 	{
@@ -172,11 +158,9 @@ void test_writeProgram_given_frame_1_as_configure_data_should_write_the_program_
 
 	isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb, 1);
-	spiSendConfig_ExpectAndReturn(0x00300001, &ptrTLV[6], 1);
-	// flashBufferRead_ExpectAndReturn(&fb, 1);
+	spiSendConfig_ExpectAndReturn(0x00300001, &TLVpointer[6], 1);
 
-	writeProgram(&fb, &tlvBuf, &ptrTLV);
-	// printf("ptrTLV: %d\n", ptrTLV);
-	TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptrTLV);
+	writeProgram(&fb, &tlvBuf);
+
 	TEST_ASSERT_EQUAL(3, tlvBuf.readyFrame);
 }
