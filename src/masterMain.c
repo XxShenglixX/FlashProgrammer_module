@@ -15,8 +15,8 @@
 #define  BaudratePrescaler  25
 
 #define  enableInterrupt()  do{                     \
-                            INTCONbits.PEIE = 1;	\
-                            INTCONbits.GIE = 1;		\
+                            INTCONbits.PEIE = 1;    \
+                            INTCONbits.GIE = 1      \
                             }while(0)
 
 #pragma config OSC = INTIO67 , PWRT = ON , WDT = OFF , DEBUG = ON , LVP =OFF
