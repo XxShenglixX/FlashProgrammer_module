@@ -16,7 +16,7 @@ void writeProgram(FlashBuffer *fb, TLV_Buffer *tlv)
 {
     uint8 *ptrTLV;
     if(isAnyFrameReady(tlv))
-	{
+    {
         ptrTLV = getReadyTLVframe(tlv);
         decodeCommand(fb, ptrTLV);
         releaseTLVframe(tlv, ptrTLV);
