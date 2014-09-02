@@ -58,7 +58,8 @@ uint8 spiSendData(uint8 *data,uint8 count,uint8 startPoint)
         spiSendByte(data[j]);
         acknack = ReadSPI();
         j++;
-    if(!checkACK(&acknack))
+        
+        if(!checkACK(&acknack))
             return 0 ; //return 0 for error
     }
 

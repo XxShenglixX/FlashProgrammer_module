@@ -20,26 +20,26 @@ void bufferHandler(uint32 address,uint8* data,uint8 length,FlashBuffer *fb)
     uint8 dataStartPoint = 0;
 
     if(isFlashBufferNull(fb))
-	{
+    {
         fb->segment = address/64 ;
         while(!flashBufferRead(fb));
-	}
+    }
 
 
     if(isConfigData(address))
-	{
+    {
         configurationDataHandler(address,data,fb);
         return ;
-	}
+    }
 
     if(isSameSegment(address,fb))
-	{
+    {
         if(isAddressInRange(address,length,fb))
             dataToBuffer(address,data,length,dataStartPoint,fb);
 
         else
             crossSegmentHandler(address,data,length,dataStartPoint,fb);
-	}
+    }
     else
         differentSegmentHandler(address,data,length,dataStartPoint,fb);
 }
@@ -66,11 +66,11 @@ void dataToBuffer(uint32 address,uint8* data,uint8 length,uint8 dataStartPoint,F
     fb->offset = (address - (fb->segment * 64)) ;
 
 	for (i = 0 ; i < length ; i ++ )
-	{
+    {
         fb->buffer[fb->offset] = data[j] ;
         (fb->offset) ++ ;
         j++;
-	}
+    }
 
 
 }
