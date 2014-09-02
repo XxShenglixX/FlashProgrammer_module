@@ -1,5 +1,6 @@
-#ifndef IntelHex16Operation_H
-#define IntelHex16Operation_H
+#ifndef  IntelHex16Operation_H
+#define  IntelHex16Operation_H
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,15 +9,15 @@ typedef enum {NOTHING, PROGRAM_MSG, START_RUNNING, TARGET_AVAILABLITY, ACK, NACK
 
 typedef struct
 {
-	char type;
-	char length;
-	char value[1];
+    char type       ;
+    char length     ;
+    char value[1]   ;
 } TLV;
 
 typedef struct
 {
-	char *line;
-	int index;
+    char *line      ;
+    int index       ;
 } IntelHex16Data;
 
 //TLV *createMessageFromIntelHex16(char *line);

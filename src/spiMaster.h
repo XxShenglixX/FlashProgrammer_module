@@ -1,7 +1,9 @@
-#ifndef spiMaster_H
-#define spiMaster_H
+#ifndef  spiMaster_H
+#define  spiMaster_H
+
 #include "Utils.h"
 #include "FlashBuffer.h"
+
 void spiConfigureMaster(void) ;
 void spiSendByte(uint8 data);
 

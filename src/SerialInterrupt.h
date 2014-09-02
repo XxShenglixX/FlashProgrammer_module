@@ -1,22 +1,23 @@
-#ifndef SerialInterrupt_H
-#define SerialInterrupt_H
+#ifndef  SerialInterrupt_H
+#define  SerialInterrupt_H
+
 #include "UART.h"
 #include "Utils.h"
 #include "FlashBuffer.h"
 
-#define stopInterrupt INTCONbits.GIE
-#define FRAME0_NOT_READY 1
-#define FRAME1_NOT_READY 2
+#define  stopInterrupt INTCONbits.GIE
+#define  FRAME0_NOT_READY 1
+#define  FRAME1_NOT_READY 2
 
-typedef enum {WAIT_FOR_TYPE,
-			  WAIT_FOR_LENGTH,
-			  WAIT_FOR_VALUE} State;
+typedef enum {  WAIT_FOR_TYPE,
+                WAIT_FOR_LENGTH,
+                WAIT_FOR_VALUE} State;
 
 typedef struct
 {
-	State state;
-	uint32 i;
-	uint32 length;
+    State state;
+    uint32 i;
+    uint32 length;
 } TLV_FSM;
 
 typedef struct

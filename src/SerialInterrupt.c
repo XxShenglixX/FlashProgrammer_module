@@ -17,33 +17,33 @@ TLV_Buffer tlvBuf = {{&tlvBuffer[0], &tlvBuffer[80]}};
 #pragma interrupt chk_SerialISR
 void chk_SerialISR(void)
 {
-	if(PIR1bits.RCIF == 1)
-		SerialISR();
+    if(PIR1bits.RCIF == 1)
+        SerialISR();
 }
 
 #pragma code My_HiVect_Int = 0x008
 void My_HiVect_Int(void)
 {
-	#ifdef __GNUC__
-	#else
-	_asm GOTO chk_SerialISR _endasm
-	#endif
+    #ifdef __GNUC__
+    #else
+    _asm GOTO chk_SerialISR _endasm
+    #endif
 }
 #pragma code
 
 void SerialISR(void)
 {
-	static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
+    static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
 	// TLV tlvBuffer = {{&tlvBuffer[0], &tlvBuffer[80]}, 3};
-	uint8 *ptr;
+    uint8 *ptr;
 
-	ptr = getNonReadyTLVframe(&tlvBuf);
+    ptr = getNonReadyTLVframe(&tlvBuf);
 	//byteReceive = uartGetByte();
 
-	if(ptr == 0)
-		uartSendByte(NACK);
-	else
-		tlvReceiveFSM(&fsm, &tlvBuf, ptr);
+    if(ptr == 0)
+        uartSendByte(NACK);
+    else
+        tlvReceiveFSM(&fsm, &tlvBuf, ptr);
 
 	/*if(tlvFrameReady == BUFFER0_AVAILABLE || tlvFrameReady == BOTH_AVAILABLE)
 	{
@@ -63,85 +63,85 @@ void SerialISR(void)
 
 void initTlvBuffer(TLV_Buffer *tlvBuf)
 {
-	tlvBuf->bufferPointers[0] = &tlvBuffer[0];
-	tlvBuf->bufferPointers[1] = &tlvBuffer[80];
-	tlvBuf->readyFrame = 3;
+    tlvBuf->bufferPointers[0] = &tlvBuffer[0];
+    tlvBuf->bufferPointers[1] = &tlvBuffer[80];
+    tlvBuf->readyFrame = 3;
 }
 
 void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 {
-	switch(fsm->state)
-	{
-		case WAIT_FOR_TYPE:
-			ptr[fsm->i] = uartGetByte();
-			//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-			//uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-			//uartSendByte(ACK);
-			if(ptr[fsm->i] == 6)
-				stopInterrupt = 0;
-			fsm->state = WAIT_FOR_LENGTH;
-			//printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
-			break;
-		case WAIT_FOR_LENGTH:
-			ptr[fsm->i] = uartGetByte();
-			//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-			//uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-			//uartSendByte(ACK);
-			fsm->length = ptr[fsm->i];
-			fsm->state = WAIT_FOR_VALUE;
-			//printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
-			break;
-		case WAIT_FOR_VALUE:
-			if(fsm->i < fsm->length + 1)
-			{
-				ptr[fsm->i] = uartGetByte();
-				//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-				//uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-				//uartSendByte(ACK);
-				fsm->state = WAIT_FOR_VALUE;
-				//printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
-			}
-			else
-			{
-				ptr[fsm->i] = uartGetByte();
-				//bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-				setTLVframe(tlvBuf, ptr);
-				//if(bufferIndex == 0)
-					//tlvFrameReady = tlvFrameReady & 0xf0;
-				//else
-					//tlvFrameReady = tlvFrameReady & 0x0f;
-				//uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-				//uartSendByte(ACK);
-				fsm->state = WAIT_FOR_TYPE;
-				//printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
-			}
-			break;
-		default:
-			break;
-	}
+    switch(fsm->state)
+    {
+        case WAIT_FOR_TYPE:
+            ptr[fsm->i] = uartGetByte();
+            //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
+            //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
+            //uartSendByte(ACK);
+            if(ptr[fsm->i] == 6)
+                stopInterrupt = 0;
+            fsm->state = WAIT_FOR_LENGTH;
+            //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
+            break;
+        case WAIT_FOR_LENGTH:
+            ptr[fsm->i] = uartGetByte();
+            //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
+            //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
+            //uartSendByte(ACK);
+            fsm->length = ptr[fsm->i];
+            fsm->state = WAIT_FOR_VALUE;
+            //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
+            break;
+        case WAIT_FOR_VALUE:
+            if(fsm->i < fsm->length + 1)
+            {
+                ptr[fsm->i] = uartGetByte();
+                //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
+                //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
+                //uartSendByte(ACK);
+                fsm->state = WAIT_FOR_VALUE;
+                //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
+            }
+            else
+            {
+                ptr[fsm->i] = uartGetByte();
+                //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
+                setTLVframe(tlvBuf, ptr);
+                //if(bufferIndex == 0)
+                    //tlvFrameReady = tlvFrameReady & 0xf0;
+                //else
+                    //tlvFrameReady = tlvFrameReady & 0x0f;
+                //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
+                //uartSendByte(ACK);
+                fsm->state = WAIT_FOR_TYPE;
+                //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
+            }
+            break;
+        default:
+            break;
+    }
 
-	if(fsm->state == WAIT_FOR_TYPE)
-		fsm->i = 0;
-	else
-		fsm->i++;
+    if(fsm->state == WAIT_FOR_TYPE)
+        fsm->i = 0;
+    else
+        fsm->i++;
 }
 
 uint8 *getNonReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	if(!isFrame0Ready(tlvBuf->readyFrame))
-		return tlvBuf->bufferPointers[0];
-	else if(!isFrame1Ready(tlvBuf->readyFrame))
-		return tlvBuf->bufferPointers[1];
-	else
-		return NULL;
+    if(!isFrame0Ready(tlvBuf->readyFrame))
+        return tlvBuf->bufferPointers[0];
+    else if(!isFrame1Ready(tlvBuf->readyFrame))
+        return tlvBuf->bufferPointers[1];
+    else
+        return NULL;
 }
 
 uint8 isFrame0Ready(uint8 readyFlag)
 {
-	if((readyFlag & 0x1) == 0)
-		return 1;
+    if((readyFlag & 0x1) == 0)
+        return 1;
 
-	return 0;
+    return 0;
 }
 
 uint8 isFrame1Ready(uint8 readyFlag)
