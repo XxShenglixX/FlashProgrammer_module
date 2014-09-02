@@ -65,7 +65,7 @@ void dataToBuffer(uint32 address,uint8* data,uint8 length,uint8 dataStartPoint,F
     fb->segment = (address/64)  ;
     fb->offset = (address - (fb->segment * 64)) ;
 
-	for (i = 0 ; i < length ; i ++ )
+    for (i = 0 ; i < length ; i ++ )
     {
         fb->buffer[fb->offset] = data[j] ;
         (fb->offset) ++ ;
