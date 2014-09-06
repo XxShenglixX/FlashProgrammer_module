@@ -1,10 +1,10 @@
 #include "SerialInterrupt.h"
-#include "IntelHex16Operation.h"
 #include "18c.h"
 #include "UART.h"
 #include "Utils.h"
 #include "DelayedWrite.h"
 #include "FlashBuffer.h"
+#include "masterMain.h"
 #include <stdio.h>
 
 uint8 tlvBuffer[160];
@@ -34,31 +34,14 @@ void My_HiVect_Int(void)
 void SerialISR(void)
 {
     static TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
-	// TLV tlvBuffer = {{&tlvBuffer[0], &tlvBuffer[80]}, 3};
     uint8 *ptr;
 
     ptr = getNonReadyTLVframe(&tlvBuf);
-	//byteReceive = uartGetByte();
 
     if(ptr == 0)
         uartSendByte(NACK);
     else
         tlvReceiveFSM(&fsm, &tlvBuf, ptr);
-
-	/*if(tlvFrameReady == BUFFER0_AVAILABLE || tlvFrameReady == BOTH_AVAILABLE)
-	{
-		bufferIndex = 0;
-		//uartSendByte(ACK);
-		tlvReceiveFSM(&fsm);
-	}
-	else if(tlvFrameReady == BUFFER1_AVAILABLE)
-	{
-		bufferIndex = 1;
-		//uartSendByte(ACK);
-		tlvReceiveFSM(&fsm);
-	}
-	else
-		uartSendByte(NACK);*/
 }
 
 void initTlvBuffer(TLV_Buffer *tlvBuf)
@@ -74,46 +57,34 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
     {
         case WAIT_FOR_TYPE:
             ptr[fsm->i] = uartGetByte();
-            //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-            //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-            //uartSendByte(ACK);
-            if(ptr[fsm->i] == 6)
-                stopInterrupt = 0;
+			if(ptr[fsm->i] == PROGRAMMING_MODE)
+			{
+				setProgrammingMode();
+				fsm->state = WAIT_FOR_TYPE;
+			}
+			if(ptr[fsm->i] == START_RUNNING)
+			{
+				setStartRunningMode();
+				fsm->state = WAIT_FOR_TYPE;
+			}
             fsm->state = WAIT_FOR_LENGTH;
-            //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
             break;
         case WAIT_FOR_LENGTH:
             ptr[fsm->i] = uartGetByte();
-            //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-            //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-            //uartSendByte(ACK);
             fsm->length = ptr[fsm->i];
             fsm->state = WAIT_FOR_VALUE;
-            //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
             break;
         case WAIT_FOR_VALUE:
             if(fsm->i < fsm->length + 1)
             {
                 ptr[fsm->i] = uartGetByte();
-                //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
-                //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-                //uartSendByte(ACK);
                 fsm->state = WAIT_FOR_VALUE;
-                //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
             }
             else
             {
                 ptr[fsm->i] = uartGetByte();
-                //bufferPointers[bufferIndex][fsm->i] = uartGetByte();
                 setTLVframe(tlvBuf, ptr);
-                //if(bufferIndex == 0)
-                    //tlvFrameReady = tlvFrameReady & 0xf0;
-                //else
-                    //tlvFrameReady = tlvFrameReady & 0x0f;
-                //uartSendByte(bufferPointers[bufferIndex][fsm->i]);
-                //uartSendByte(ACK);
                 fsm->state = WAIT_FOR_TYPE;
-                //printf("bufferPointers[bufferIndex][fsm->i]: %d\n", bufferPointers[bufferIndex][fsm->i]);
             }
             break;
         default:
@@ -207,9 +178,7 @@ uint8 getLength(uint8 *ptrTLV)
 
 uint8 *getData(uint8 *ptrTLV)
 {
-	uint8 dataSize, *data, i;
-
-	dataSize = getLength(ptrTLV);
+	uint8 *data, i;
 
 	if(((TLV *)ptrTLV)->type == PROGRAM_MSG)
 	{
@@ -222,7 +191,6 @@ uint8 *getData(uint8 *ptrTLV)
 
 void decodeCommand(FlashBuffer *fb, uint8 *ptrTLV)
 {
-	// printf("ptrTLV: %d\n", ptrTLV[0]);
 	bufferHandler(getAddress(ptrTLV), getData(ptrTLV), getLength(ptrTLV), fb);
 }
 
@@ -232,4 +200,18 @@ uint8 isAnyFrameReady(TLV_Buffer *tlvBuf)
 		return 1;
 
 	return 0;
+}
+
+void setProgrammingMode(void)
+{
+	stopTarget();
+	resetTarget = 1;
+	uartSendByte(ACK);
+}
+
+void setStartRunningMode(void)
+{
+	runTarget();
+	resetTarget = 1;
+	stopInterrupt = 0;
 }

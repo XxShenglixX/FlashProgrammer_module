@@ -1,6 +1,5 @@
 #include "unity.h"
 #include "TLV.h"
-#include "IntelHex16Operation.h"
 #include "SerialInterrupt.h"
 #include "mock_UART.h"
 #include "p18f4520.h"
@@ -65,10 +64,6 @@ void test_writeProgram_given_frame_2_should_write_the_program_from_frame_1(void)
 		TLVpointer[i] = frame[i];
 	}
 
-	// printf("&tlv.bufferPointers[0]: %d\n", tlvBuf.bufferPointers[1]);
-	// printf("&tlvBuffer[80]: %d\n", &tlvBuffer[80]);
-	// printf("ptrTLV: %d\n", ptrTLV);
-
 	FlashBuffer fb;
 	fb.offset = 0;
 	fb.segment = 0;
@@ -106,10 +101,6 @@ void test_writeProgram_given_frame_1_and_2_should_write_the_program_from_frame_1
 		TLVpointer[i] = frame2[i];
 	}
 
-	// printf("&tlv.bufferPointers[0]: %d\n", tlvBuf.bufferPointers[1]);
-	// printf("&tlvBuffer[80]: %d\n", &tlvBuffer[80]);
-	// printf("ptrTLV: %d\n", ptrTLV);
-
 	FlashBuffer fb;
 	fb.offset = 0;
 	fb.segment = 0;
@@ -146,10 +137,6 @@ void test_writeProgram_given_frame_1_as_configure_data_should_write_the_program_
 	{
 		TLVpointer[i] = frame[i];
 	}
-
-	// printf("&tlv.bufferPointers[0]: %d\n", tlvBuf.bufferPointers[1]);
-	// printf("&tlvBuffer[80]: %d\n", &tlvBuffer[80]);
-	// printf("ptrTLV: %d\n", ptrTLV);
 
 	FlashBuffer fb;
 	fb.offset = 0;

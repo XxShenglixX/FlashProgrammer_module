@@ -1,6 +1,7 @@
 #include "18c.h"
 #include <spi.h>
 #include <delays.h>
+#include "masterMain.h"
 #include "spiMaster.h"
 #include "FlashBuffer.h"
 #include "DelayedWrite.h"
@@ -8,28 +9,22 @@
 #include "SerialInterrupt.h"
 #include "TLV.h"
 
-#define  configureTarget()  TRISDbits.TRISD3 = 0
-#define  runTargetPin       PORTDbits.RD3
-#define  stopTarget()       runTargetPin=0
-#define  runTarget()        runTargetPin=1
-#define  BaudratePrescaler  25
-
-#define  enableInterrupt()  do{                     \
-                            INTCONbits.PEIE = 1;    \
-                            INTCONbits.GIE = 1      \
-                            }while(0)
-
 #pragma config OSC = INTIO67 , PWRT = ON , WDT = OFF , DEBUG = ON , LVP =OFF
 
 extern TLV_Buffer tlvBuf;
 
+#ifdef __GNUC__
+void master_main()
+{
+	main();
+}
+#else
 void main()
 {
     FlashBuffer fb;
     fb.buffer = 0 ;
-    configureTarget();
-    stopTarget();
-
+    
+	configureTarget();
     uartSetup(BaudratePrescaler);
     initTlvBuffer(&tlvBuf);
     enableInterrupt();
@@ -38,7 +33,6 @@ void main()
     {
         writeProgram(&fb,&tlvBuf);
     }
-
-
-    runTarget();
 }
+#endif
+

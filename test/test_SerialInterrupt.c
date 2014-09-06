@@ -1,16 +1,14 @@
 #include "unity.h"
-#include "IntelHex16Operation.h"
 #include "SerialInterrupt.h"
 #include "mock_UART.h"
 #include "p18f4520.h"
 #include "CustomTypeAssertion.h"
 #include "mock_DelayedWrite.h"
 #include "mock_FlashBuffer.h"
+#include "masterMain.h"
 #include <stdio.h>
 
 extern uint8 tlvBuffer[160];
-// extern uint8 tlvFrameReady;
-// extern uint8 *bufferPointers[];
 
 extern TLV_Buffer tlvBuf;
 
@@ -313,4 +311,21 @@ void test_isAnyFrameReady_should_return_0_if_both_frame_non_ready(void)
 	tlvBuf.readyFrame = FRAME1_NOT_READY | FRAME0_NOT_READY;
 
 	TEST_ASSERT_EQUAL(0, isAnyFrameReady(&tlvBuf));
+}
+
+void test_setProgrammingMode_should_set_runTargetPin_to_0_and_reset_target_and_send_ACK_to_PC(void)
+{
+	uartSendByte_Expect(ACK);
+
+	setProgrammingMode();
+	TEST_ASSERT_EQUAL(0, runTargetPin);
+	TEST_ASSERT_EQUAL(1, resetTarget);
+}
+
+void test_setStartRunningMode_should_set_runTargetPin_and_resetTarget_and_stop_interrupt(void)
+{
+	setStartRunningMode();
+	TEST_ASSERT_EQUAL(1, runTargetPin);
+	TEST_ASSERT_EQUAL(1, resetTarget);
+	TEST_ASSERT_EQUAL(0, stopInterrupt);
 }
