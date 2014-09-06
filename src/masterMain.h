@@ -1,9 +1,9 @@
 #ifndef masterMain_H
 #define masterMain_H
 
-#define  configureTarget()  TRISDbits.TRISD3 = 0
+#define  configurePorts()   TRISD = TRISD | 0x10
 #define  runTargetPin       PORTDbits.RD3
-#define  resetTarget		PORTDbits.RD4
+#define  resetTarget        PORTDbits.RD4
 #define  stopTarget()       runTargetPin = 0
 #define  runTarget()        runTargetPin = 1
 #define  BaudratePrescaler  25

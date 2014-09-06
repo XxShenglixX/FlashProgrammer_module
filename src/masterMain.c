@@ -24,7 +24,7 @@ void main()
     FlashBuffer fb;
     fb.buffer = 0 ;
     
-	configureTarget();
+	configurePorts();
     uartSetup(BaudratePrescaler);
     initTlvBuffer(&tlvBuf);
     enableInterrupt();

@@ -238,18 +238,31 @@ void test_bufferHandler_given_segment_1_address_0x300000_should_call_flushBuffer
 	TEST_ASSERT_EQUAL(9,buffer[8]);TEST_ASSERT_EQUAL(10,buffer[9]);
 }
 
-void test_configurationDataHandler_should_call_flushBufferFlush_and_spiSendConfig()
+void test_configurationDataHandler_should_call_flushBufferFlush_and_spiSendConfig_if_buffer_not_0()
 {
 	uint32 address = 0x300000;
 	uint8 data[20];
 	FlashBuffer fb;
 
+    isFlashBufferNull_ExpectAndReturn(&fb,0);
 	flashBufferFlush_ExpectAndReturn(&fb,1);
 	spiSendConfig_ExpectAndReturn(address,data,1);
 
 	configurationDataHandler(address,data,&fb);
+    TEST_ASSERT_EQUAL(0,fb.buffer);
 }
 
+void test_configurationDataHandler_should_call_spiSendConfig_only_if_buffer_is_0()
+{
+	uint32 address = 0x300000;
+	uint8 data[20];
+	FlashBuffer fb;
+
+    isFlashBufferNull_ExpectAndReturn(&fb,1);
+	spiSendConfig_ExpectAndReturn(address,data,1);
+
+	configurationDataHandler(address,data,&fb);
+}
 
 
 

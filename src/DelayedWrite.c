@@ -19,17 +19,16 @@ void bufferHandler(uint32 address,uint8* data,uint8 length,FlashBuffer *fb)
 {
     uint8 dataStartPoint = 0;
 
-    if(isFlashBufferNull(fb))
-    {
-        fb->segment = address/64 ;
-        while(!flashBufferRead(fb));
-    }
-
-
     if(isConfigData(address))
     {
         configurationDataHandler(address,data,fb);
         return ;
+    }
+
+    if(isFlashBufferNull(fb))
+    {
+        fb->segment = address/64 ;
+        while(!flashBufferRead(fb));
     }
 
     if(isSameSegment(address,fb))
@@ -143,7 +142,11 @@ void differentSegmentHandler(uint32 address,uint8* data,uint8 length,uint8 dataS
  */
 void configurationDataHandler(uint32 address,uint8* data,FlashBuffer *fb)
 {
-    while(!flashBufferFlush(fb));//Flush the previous holding buffer
+    if(!isFlashBufferNull(fb))
+    {
+        while(!flashBufferFlush(fb));//Flush the previous holding buffer
+        fb->buffer = 0; //Set buffer to NULL and prevent over flushing
+    }
     spiSendConfig(address,data);// Different method of sending data and programming required
 }
 
