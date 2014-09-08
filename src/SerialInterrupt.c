@@ -205,13 +205,13 @@ uint8 isAnyFrameReady(TLV_Buffer *tlvBuf)
 void setProgrammingMode(void)
 {
 	stopTarget();
-	resetTarget = 1;
+	resetTarget = 0;
 	uartSendByte(ACK);
 }
 
 void setStartRunningMode(void)
 {
 	runTarget();
-	resetTarget = 1;
+	resetTarget = 0;
 	stopInterrupt = 0;
 }

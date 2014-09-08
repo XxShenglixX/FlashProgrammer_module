@@ -313,19 +313,19 @@ void test_isAnyFrameReady_should_return_0_if_both_frame_non_ready(void)
 	TEST_ASSERT_EQUAL(0, isAnyFrameReady(&tlvBuf));
 }
 
-void test_setProgrammingMode_should_set_runTargetPin_to_0_and_reset_target_and_send_ACK_to_PC(void)
+void test_setProgrammingMode_should_set_runTargetPin_and_reset_target_to_0_and_send_ACK_to_PC(void)
 {
 	uartSendByte_Expect(ACK);
 
 	setProgrammingMode();
 	TEST_ASSERT_EQUAL(0, runTargetPin);
-	TEST_ASSERT_EQUAL(1, resetTarget);
+	TEST_ASSERT_EQUAL(0, resetTarget);
 }
 
-void test_setStartRunningMode_should_set_runTargetPin_and_resetTarget_and_stop_interrupt(void)
+void test_setStartRunningMode_should_set_runTargetPin_to_1_and_resetTarget_to_0_and_stop_interrupt(void)
 {
 	setStartRunningMode();
 	TEST_ASSERT_EQUAL(1, runTargetPin);
-	TEST_ASSERT_EQUAL(1, resetTarget);
+	TEST_ASSERT_EQUAL(0, resetTarget);
 	TEST_ASSERT_EQUAL(0, stopInterrupt);
 }
