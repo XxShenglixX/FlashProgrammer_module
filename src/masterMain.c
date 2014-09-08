@@ -29,10 +29,9 @@ void main()
     initTlvBuffer(&tlvBuf);
     enableInterrupt();
 
-    while(stopInterrupt !=0 && isAnyFrameReady(&tlvBuf) !=1)
-    {
+    // while(stopInterrupt !=0 && isAnyFrameReady(&tlvBuf) !=1)
+	while(1)
         writeProgram(&fb,&tlvBuf);
-    }
 }
 #endif
 
