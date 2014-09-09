@@ -60,11 +60,13 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 			if(ptr[fsm->i] == PROGRAMMING_MODE)
 			{
 				setProgrammingMode();
+				resetTarget = 1;
 				fsm->state = WAIT_FOR_TYPE;
 			}
 			if(ptr[fsm->i] == START_RUNNING)
 			{
 				setStartRunningMode();
+				resetTarget = 1;
 				fsm->state = WAIT_FOR_TYPE;
 			}
             fsm->state = WAIT_FOR_LENGTH;
