@@ -1,6 +1,5 @@
-#include "p18f4520.h"
+#include "18c.h"
 #include "UART.h"
-#include "Utils.h"
 
 uint8 byteToGet;
 
@@ -9,7 +8,7 @@ uint8 byteToGet;
  * Port C pin 6 as output(Transmit)
  * Port C pin 7 as input(Receive)
  **/
-void uartSetup(int baudrate)
+void uartSetup(uint32 baudrate)
 {
     OSCCONbits.IRCF1 = 1;			//frequency set to 4Mhz
     while(OSCCONbits.IOFS == 0);	//wait untill stable
@@ -21,7 +20,6 @@ void uartSetup(int baudrate)
     SPBRG = baudrate;				//9600 baud @4MHz
 
     PIE1bits.RCIE = 1;
-    PIE1bits.TXIE = 1;
 }
 
 /**
@@ -29,10 +27,10 @@ void uartSetup(int baudrate)
  * by a write to TXREG and set when transmission
  * of the byte is complete
  **/
-void uartSendByte(char byteToSend)
+void uartSendByte(uint8 byteToSend)
 {
-    while(while(Busy1USART()));
-	TXREG = byteToSend;
+    while(Busy1USART());
+    TXREG = byteToSend;
 }
 
 /**
@@ -43,8 +41,6 @@ void uartSendByte(char byteToSend)
 uint32 uartGetByte(void)
 {
     while(PIR1bits.RCIF == 0);
-    {
-        byteToGet = RCREG;
-	}
+    byteToGet = RCREG;
     return byteToGet;
 }

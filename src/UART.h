@@ -12,10 +12,10 @@
 #define  TRISC_CONFIG           0xbf
 #define  TX_HIGH_LEVEL          0x00
 #define  EIGHT_BIT_BAUDRATE     0x00
-#define Busy1USART( )  (!TXSTAbits.TRMT)
+#define	 Busy1USART()			(!TXSTAbits.TRMT)
 
-void uartSendByte(char byteToSend);
+void uartSendByte(uint8 byteToSend);
 uint32 uartGetByte(void);
-void uartSetup(int baudrate);
+void uartSetup(uint32 baudrate);
 
 #endif // UART_H
