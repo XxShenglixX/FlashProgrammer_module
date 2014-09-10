@@ -53,40 +53,35 @@ void initTlvBuffer(TLV_Buffer *tlvBuf)
 
 void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
 {
+    ptr[fsm->i] = uartGetByte();
+
     switch(fsm->state)
     {
         case WAIT_FOR_TYPE:
-            ptr[fsm->i] = uartGetByte();
-			if(ptr[fsm->i] == PROGRAMMING_MODE)
-			{
-				setProgrammingMode();
-				resetTarget = 1;
-				fsm->state = WAIT_FOR_TYPE;
-			}
-			if(ptr[fsm->i] == START_RUNNING)
-			{
-				setStartRunningMode();
-				resetTarget = 1;
-				fsm->state = WAIT_FOR_TYPE;
-			}
-            fsm->state = WAIT_FOR_LENGTH;
+            if(ptr[fsm->i] == PROGRAMMING_MODE)
+            {
+                setProgrammingMode();
+                resetTarget = 1;
+            }
+            else if(ptr[fsm->i] == START_RUNNING)
+            {
+                setStartRunningMode();
+                resetTarget = 1;
+            }
+            else
+                fsm->state = WAIT_FOR_LENGTH;
             break;
         case WAIT_FOR_LENGTH:
-            ptr[fsm->i] = uartGetByte();
             fsm->length = ptr[fsm->i];
             fsm->state = WAIT_FOR_VALUE;
             break;
         case WAIT_FOR_VALUE:
-            if(fsm->i < fsm->length + 1)
-            {
-                ptr[fsm->i] = uartGetByte();
+            if((fsm->i - 1) < fsm->length)
                 fsm->state = WAIT_FOR_VALUE;
-            }
             else
             {
-                ptr[fsm->i] = uartGetByte();
-                setTLVframe(tlvBuf, ptr);
                 fsm->state = WAIT_FOR_TYPE;
+                setTLVframe(tlvBuf, ptr);
             }
             break;
         default:
@@ -97,6 +92,20 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
         fsm->i = 0;
     else
         fsm->i++;
+}
+
+void setProgrammingMode(void)
+{
+    stopTarget();
+    resetTarget = 0;
+    uartSendByte(ACK);
+}
+
+void setStartRunningMode(void)
+{
+    runTarget();
+    resetTarget = 0;
+    stopInterrupt = 0;
 }
 
 uint8 *getNonReadyTLVframe(TLV_Buffer *tlvBuf)
@@ -119,101 +128,86 @@ uint8 isFrame0Ready(uint8 readyFlag)
 
 uint8 isFrame1Ready(uint8 readyFlag)
 {
-	if((readyFlag & 0x2) == 0)
-		return 1;
+    if((readyFlag & 0x2) == 0)
+        return 1;
 
-	return 0;
+    return 0;
 }
 
 void setTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
 {
-
-	if(ptrTLV == &tlvBuffer[0])
-	{
-		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x2;
-	}
-	else
-	{
-		tlvBuf->readyFrame = tlvBuf->readyFrame & 0x1;
-	}
+    if(ptrTLV == &tlvBuffer[0])
+    {
+        tlvBuf->readyFrame = tlvBuf->readyFrame & 0x2;
+    }
+    else
+    {
+        tlvBuf->readyFrame = tlvBuf->readyFrame & 0x1;
+    }
 }
 
 uint8 *getReadyTLVframe(TLV_Buffer *tlvBuf)
 {
-	if(isFrame0Ready(tlvBuf->readyFrame))
-		return tlvBuf->bufferPointers[0];
-	else if(isFrame1Ready(tlvBuf->readyFrame))
-		return tlvBuf->bufferPointers[1];
-	else
-		return NULL;
+    if(isFrame0Ready(tlvBuf->readyFrame))
+        return tlvBuf->bufferPointers[0];
+    else if(isFrame1Ready(tlvBuf->readyFrame))
+        return tlvBuf->bufferPointers[1];
+    else
+        return NULL;
 }
 
 void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
 {
-	if(ptrTLV == &tlvBuffer[0])
-	{
-		tlvBuf->readyFrame = tlvBuf->readyFrame | 0x1;
-	}
-	else
-	{
-		tlvBuf->readyFrame = tlvBuf->readyFrame | 0x2;
-	}
+    if(ptrTLV == &tlvBuffer[0])
+    {
+        tlvBuf->readyFrame = tlvBuf->readyFrame | 0x1;
+    }
+    else
+    {
+        tlvBuf->readyFrame = tlvBuf->readyFrame | 0x2;
+    }
 }
 
 uint32 getAddress(uint8 *ptrTLV)
 {
-	uint32 address;
+    uint32 address;
 
-	address = (uint32)(ptrTLV[5]) << 24 | (uint32)(ptrTLV[4]) << 16 | (uint32)(ptrTLV[3]) << 8 | (uint32)(ptrTLV[2]);
+    address = (uint32)(ptrTLV[5]) << 24 | (uint32)(ptrTLV[4]) << 16 | (uint32)(ptrTLV[3]) << 8 | (uint32)(ptrTLV[2]);
 
-	return address;
+    return address;
 }
 
 uint8 getLength(uint8 *ptrTLV)
 {
-	uint8 length;
+    uint8 length;
 
-	length = ptrTLV[1] - 5;
+    length = ptrTLV[1] - 5;
 
-	return length;
+    return length;
 }
 
 uint8 *getData(uint8 *ptrTLV)
 {
-	uint8 *data, i;
+    uint8 *data, i;
 
-	if(((TLV *)ptrTLV)->type == PROGRAM_MSG)
-	{
-		data = &ptrTLV[6];
-		return data;
-	}
-	else
-		return NULL;
+    if(((TLV *)ptrTLV)->type == PROGRAM_MSG)
+    {
+        data = &ptrTLV[6];
+        return data;
+    }
+    else
+        return NULL;
 }
 
 void decodeCommand(FlashBuffer *fb, uint8 *ptrTLV)
 {
-	bufferHandler(getAddress(ptrTLV), getData(ptrTLV), getLength(ptrTLV), fb);
+    bufferHandler(getAddress(ptrTLV), getData(ptrTLV), getLength(ptrTLV), fb);
 }
 
 uint8 isAnyFrameReady(TLV_Buffer *tlvBuf)
 {
-	if(isFrame0Ready(tlvBuf->readyFrame) || isFrame1Ready(tlvBuf->readyFrame))
-		return 1;
+    if(isFrame0Ready(tlvBuf->readyFrame) || isFrame1Ready(tlvBuf->readyFrame))
+        return 1;
 
-	return 0;
-}
-
-void setProgrammingMode(void)
-{
-	stopTarget();
-	resetTarget = 0;
-	uartSendByte(ACK);
-}
-
-void setStartRunningMode(void)
-{
-	runTarget();
-	resetTarget = 0;
-	stopInterrupt = 0;
+    return 0;
 }

@@ -16,21 +16,21 @@ extern TLV_Buffer tlvBuf;
 #ifdef __GNUC__
 void master_main()
 {
-	main();
+    main();
 }
 #else
 void main()
 {
     FlashBuffer fb;
     fb.buffer = 0 ;
-    
-	configurePorts();
+
+    configurePorts();
     uartSetup(BaudratePrescaler);
     initTlvBuffer(&tlvBuf);
     enableInterrupt();
 
     // while(stopInterrupt !=0 && isAnyFrameReady(&tlvBuf) !=1)
-	while(1)
+    while(1)
         writeProgram(&fb,&tlvBuf);
 }
 #endif

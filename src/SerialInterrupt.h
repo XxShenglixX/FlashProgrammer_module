@@ -5,33 +5,31 @@
 #include "Utils.h"
 #include "FlashBuffer.h"
 
-#define  stopInterrupt INTCONbits.GIE
-#define  FRAME0_NOT_READY 1
-#define  FRAME1_NOT_READY 2
+#define stopInterrupt      INTCONbits.GIE
+#define FRAME0_NOT_READY   1
+#define FRAME1_NOT_READY   2
 
-typedef enum {  WAIT_FOR_TYPE,
-                WAIT_FOR_LENGTH,
-                WAIT_FOR_VALUE} State;
+typedef enum {WAIT_FOR_TYPE, WAIT_FOR_LENGTH, WAIT_FOR_VALUE} State;
 typedef enum {NOTHING, PROGRAM_MSG, START_RUNNING, TARGET_AVAILABLITY, ACK, NACK, PROGRAMMING_MODE} TLV_Message;
 
 typedef struct
 {
-	char type;
-	char length;
-	char value;
+    char type;
+    char length;
+    char value;
 } TLV;
 
 typedef struct
 {
     State state;
     uint32 i;
-	uint32 length;
+    uint32 length;
 } TLV_FSM;
 
 typedef struct
 {
-	uint8 *bufferPointers[2];
-	uint32 readyFrame;
+    uint8 *bufferPointers[2];
+    uint32 readyFrame;
 } TLV_Buffer;
 
 void chk_SerialISR(void);
