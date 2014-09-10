@@ -1,27 +1,8 @@
 #include "p18f4520.h"
 #include "UART.h"
 #include "Utils.h"
-//#pragma config OSC = INTIO67, WDT = OFF, DEBUG = ON, LVP = OFF
 
 uint8 byteToGet;
-/*
-void uartSendByte(char byteToSend);
-int uartGetByte();
-void uartSetup(int baudrate);
-//void uartClose();
-
-void main(void)
-{
-	int baudrate = 25;
-	char byteToSend = 0x35;
-
-	uartSetup(baudrate);
-	////uartSendByte(byteToSend);
-	uartGetByte();
-	////uartClose();
-
-	while(1);
-}*/
 
 /**
  * UART configuration
@@ -50,10 +31,8 @@ void uartSetup(int baudrate)
  **/
 void uartSendByte(char byteToSend)
 {
-    while(PIR1bits.TXIF == 1)
-    {
-        TXREG = byteToSend;
-    }
+    while(while(Busy1USART()));
+	TXREG = byteToSend;
 }
 
 /**

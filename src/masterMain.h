@@ -3,7 +3,7 @@
 
 #define  configurePorts()   TRISD = TRISD | 0x10
 #define  runTargetPin       PORTDbits.RD3
-#define  resetTarget        PORTDbits.RD4
+#define  resetTarget        PORTDbits.RD2
 #define  stopTarget()       runTargetPin = 0
 #define  runTarget()        runTargetPin = 1
 #define  BaudratePrescaler  25
