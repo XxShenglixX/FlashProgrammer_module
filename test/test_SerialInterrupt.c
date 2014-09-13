@@ -248,11 +248,11 @@ void test_tlvReceiveFSM_given_frame_should_change_state_from_WAIT_FOR_TYPE_to_WA
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
     TLV_FSM fsm = {WAIT_FOR_TYPE, 0};
     uint8 *ptr;
-    uint8 frame[] = {0x01,                      //type
+    uint8 frame[] = {PROGRAM_MSG,               //type
                      0x07,                      //length
                      0x04, 0x00, 0x00, 0x00,    //address
                      0x02, 0x0e,                //data
-                     0x47};                     //checksum
+                     0xe4};                     //checksum
 
     ptr	= getNonReadyTLVframe(&tlvBuf);
     TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
@@ -271,11 +271,11 @@ void test_tlvReceiveFSM_given_frame_should_change_state_from_WAIT_FOR_LENGTH_to_
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
     TLV_FSM fsm = {WAIT_FOR_LENGTH, 1};
     uint8 *ptr;
-    uint8 frame[] = {0x01,                      //type
+    uint8 frame[] = {PROGRAM_MSG,               //type
                      0x07,                      //length
                      0x04, 0x00, 0x00, 0x00,    //address
                      0x02, 0x0e,                //data
-                     0x47};                     //checksum
+                     0xe4};                     //checksum
 
     ptr	= getNonReadyTLVframe(&tlvBuf);
     TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
@@ -295,11 +295,11 @@ void test_tlvReceiveFSM_given_frame_should_remain_WAIT_FOR_VALUE_state_if_there_
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
     TLV_FSM fsm = {WAIT_FOR_VALUE, 6, 7};
     uint8 *ptr;
-    uint8 frame[] = {0x01,                      //type
+    uint8 frame[] = {PROGRAM_MSG,               //type
                      0x07,                      //length
                      0x04, 0x00, 0x00, 0x00,    //address
                      0x02, 0x0e,                //data
-                     0x47};                     //checksum
+                     0xe4};                     //checksum
 
     ptr	= getNonReadyTLVframe(&tlvBuf);
     TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
@@ -317,16 +317,28 @@ void test_tlvReceiveFSM_given_frame_should_remain_WAIT_FOR_VALUE_state_if_there_
 void test_tlvReceiveFSM_given_frame_should_state_from_WAIT_FOR_VALUE_to_WAIT_FOR_TYPE_if_there_is_no_remaining_frame_to_be_receive(void)
 {
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
-    TLV_FSM fsm = {WAIT_FOR_VALUE, 10};
-    uint8 *ptr;
-    uint8 frame[] = {0x01,                      //type
+    TLV_FSM fsm = {WAIT_FOR_VALUE, 9, 9};
+    uint8 *ptr, i;
+    uint8 frame[] = {PROGRAM_MSG,               //type
                      0x09,                      //length
                      0x04, 0x00, 0x00, 0x00,    //address
                      0x02, 0x0e, 0x45, 0x18,    //data
-                     0x47};                     //checksum
+                     0x85};                     //checksum
 
     ptr	= getNonReadyTLVframe(&tlvBuf);
+
+    for(i = 0; i < 9; i++)                      //for test purpose
+        ptr[i] = frame[i];
+
     TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
+
+    uartGetByte_ExpectAndReturn(frame[9]);
+
+    tlvReceiveFSM(&fsm, &tlvBuf, ptr);
+
+    TEST_ASSERT_EQUAL(frame[9], ptr[9]);
+    TEST_ASSERT_EQUAL(WAIT_FOR_VALUE, fsm.state);
+    TEST_ASSERT_EQUAL(10, fsm.i);
 
     uartGetByte_ExpectAndReturn(frame[10]);
 
@@ -338,15 +350,71 @@ void test_tlvReceiveFSM_given_frame_should_state_from_WAIT_FOR_VALUE_to_WAIT_FOR
     TEST_ASSERT_EQUAL(FRAME1_NOT_READY, tlvBuf.readyFrame);
 }
 
+void test_tlvReceiveFSM_given_frame_should_state_from_WAIT_FOR_VALUE_to_WAIT_FOR_TYPE_if_frame_checksum_is_incorrect_and_send_ERR_WRONG_CHECKSUM_to_PC(void)
+{
+    tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
+    TLV_FSM fsm = {WAIT_FOR_VALUE, 10, 9};
+    uint8 *ptr, i;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x09,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e, 0x45, 0x18,    //data
+                     0x56};                     //checksum
+
+    ptr	= getNonReadyTLVframe(&tlvBuf);
+
+    for(i = 0; i < 10; i++)                     //for test purpose
+        ptr[i] = frame[i];
+
+    TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
+
+    uartGetByte_ExpectAndReturn(frame[10]);
+    uartSendByte_Expect(ERR_WRONG_CHECKSUM);
+
+    tlvReceiveFSM(&fsm, &tlvBuf, ptr);
+
+    TEST_ASSERT_EQUAL(frame[10], ptr[10]);
+    TEST_ASSERT_EQUAL(WAIT_FOR_TYPE, fsm.state);
+    TEST_ASSERT_EQUAL(0, fsm.i);
+}
+
+void test_tlvReceiveFSM_given_frame_should_state_from_WAIT_FOR_VALUE_to_WAIT_FOR_TYPE_if_frame_type_is_incorrect_and_send_ERR_WRONG_TYPE_to_PC(void)
+{
+    tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
+    TLV_FSM fsm = {WAIT_FOR_VALUE, 10, 9};
+    uint8 *ptr, i;
+    uint8 frame[] = {0x02,                      //type
+                     0x09,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e, 0x45, 0x18,    //data
+                     0x85};                     //checksum
+
+    ptr	= getNonReadyTLVframe(&tlvBuf);
+
+    for(i = 0; i < 10; i++)                     //for test purpose
+        ptr[i] = frame[i];
+
+    TEST_ASSERT_EQUAL_PTR(&tlvBuffer[0], ptr);
+
+    uartGetByte_ExpectAndReturn(frame[10]);
+    uartSendByte_Expect(ERR_WRONG_TYPE);
+
+    tlvReceiveFSM(&fsm, &tlvBuf, ptr);
+
+    TEST_ASSERT_EQUAL(frame[10], ptr[10]);
+    TEST_ASSERT_EQUAL(WAIT_FOR_TYPE, fsm.state);
+    TEST_ASSERT_EQUAL(0, fsm.i);
+}
+
 void test_SerialISR_given_frame_0_non_ready_should_get_byte_from_the_uart_and_set_frame_0_to_0(void)
 {
     int i;
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
-    uint8 frame[] = {0x01,                      //type
+    uint8 frame[] = {PROGRAM_MSG,               //type
                      0x07,                      //length
                      0x04, 0x00, 0x00, 0x00,    //address
                      0x02, 0x0e,                //data
-                     0x47};                     //checksum
+                     0xe4};                     //checksum
 
     setupUartGetByte(frame, sizeof(frame));
 
@@ -362,17 +430,17 @@ void test_SerialISR_given_frame_0_and_1_non_ready_should_get_byte_from_the_uart_
 {
     int i;
     tlvBuf.readyFrame = FRAME0_NOT_READY | FRAME1_NOT_READY;
-    uint8 frame1[] = {0x01,                     //type
+    uint8 frame1[] = {PROGRAM_MSG,              //type
                       0x07,                     //length
                       0x04, 0x00, 0x00, 0x00,   //address
                       0x02, 0x0e,               //data
-                      0x47};                    //checksum
+                      0xe4};                    //checksum
 
-	uint8 frame2[] = {0x01,                     //type
+	uint8 frame2[] = {PROGRAM_MSG,              //type
                       0x09,                     //length
                       0x01, 0x00, 0x30, 0x00,   //address
                       0x45, 0x18, 0x73, 0x27,   //data
-                      0x47};                    //checksum
+                      0xce};                    //checksum
 
     setupUartGetByte(frame1, sizeof(frame1));
 
@@ -426,47 +494,114 @@ void test_releaseTLVframe_given_frame_1_done_writing_should_release_frame_1_to_1
     TEST_ASSERT_EQUAL(FRAME1_NOT_READY | FRAME0_NOT_READY, tlvBuf.readyFrame);
 }
 
+void test_verifyType_given_frame_should_check_the_frame_type_and_return_1_if_type_is_PROGRAM_MSG(void)
+{
+    uint8 result;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x07,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e,                //data
+                     0x47};                     //checksum
+
+    result = verifyType(frame);
+    TEST_ASSERT_EQUAL(1, result);
+}
+
+void test_verifyType_given_frame_should_check_the_frame_type_and_return_0_if_type_is_not_PROGRAM_MSG(void)
+{
+    uint8 result;
+    uint8 frame[] = {0x05,                      //type
+                     0x07,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e,                //data
+                     0x47};                     //checksum
+
+    result = verifyType(frame);
+    TEST_ASSERT_EQUAL(0, result);
+}
+/*
+void test_verifyLength_given_frame_should_return_1_if_length_of_the_TLV_is_correct(void)
+{
+    uint8 result;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x09,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e, 0x45, 0x18,    //data
+                     0x85};                     //checksum
+
+    result = verifyLength(frame);
+    TEST_ASSERT_EQUAL(1, result);
+}
+
+void test_verifyLength_given_frame_should_return_0_if_length_of_the_TLV_is_incorrect(void)
+{
+    uint8 result;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x07,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e, 0x45, 0x18,    //data
+                     0x85};                     //checksum
+
+    result = verifyLength(frame);
+    TEST_ASSERT_EQUAL(0, result);
+}
+*/
+void test_verifyCheckSum_given_frame_should_return_1_if_checksum_is_correct(void)
+{
+    uint8 result;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x07,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e,                //data
+                     0xe4};                     //checksum
+
+    result = verifyCheckSum(frame);
+    TEST_ASSERT_EQUAL(1, result);
+}
+
+void test_verifyCheckSum_given_frame_should_return_0_if_checksum_is_incorrect(void)
+{
+    uint8 result;
+    uint8 frame[] = {PROGRAM_MSG,               //type
+                     0x07,                      //length
+                     0x04, 0x00, 0x00, 0x00,    //address
+                     0x02, 0x0e, 0x45, 0x18,    //data
+                     0xf2};                     //checksum
+
+    result = verifyCheckSum(frame);
+    TEST_ASSERT_EQUAL(0, result);
+}
+
 void test_getAddress_should_return_the_complete_4byte_address_from_the_frame(void)
 {
-    uint8 *ptr;
     uint8 data[] = {0x01, 0x07, 0x01, 0x00, 0x30, 0x00, 0x02, 0xe7, 0xff};
 
-    ptr	= data;
-    TEST_ASSERT_EQUAL(0x00300001, getAddress(ptr));
+    TEST_ASSERT_EQUAL(0x00300001, getAddress(data));
 }
 
 void test_getLength_should_return_the_length_of_the_data_from_the_frame(void)
 {
-    uint8 *ptr;
     uint8 data[] = {0x01, 0x07, 0x01, 0x00, 0x30, 0x00, 0x02, 0xe7, 0xff};
 
-    ptr	= data;
-    TEST_ASSERT_EQUAL(2, getLength(ptr));
+    TEST_ASSERT_EQUAL(2, getLength(data));
 }
 
 void test_getData_given_frame_should_get_the_data(void)
 {
-    uint8 *ptr, *dataReturn, length;
     uint8 frame[] = {0x01, 0x07, 0x01, 0x00, 0x30, 0x00, 0x02, 0xe7, 0xff};
     uint8 BigEndianData[] = {0x02, 0xe7};
 
-    ptr	= frame;
-    dataReturn = getData(ptr);
-    length = getLength(ptr);
-    TEST_ASSERT_EQUAL_tlvDecode(length, BigEndianData, dataReturn);
+    TEST_ASSERT_EQUAL_tlvDecode(getLength(frame), BigEndianData, getData(frame));
 }
 
 void test_decodeCommand_should_call_bufferHandler(void)
 {
     FlashBuffer fb;
     uint8 frame[] = {0x01, 0x07, 0x01, 0x00, 0x30, 0x00, 0x02, 0xe7, 0xff};
-    uint8 *ptrTLV;
 
-    ptrTLV	= frame;
+    bufferHandler_Expect(0x00300001, &frame[6], 2, &fb);
 
-    bufferHandler_Expect(0x00300001, &ptrTLV[6], 2, &fb);
-
-    decodeCommand(&fb, ptrTLV);
+    decodeCommand(&fb, frame);
 }
 
 void test_isAnyFrameReady_should_return_1_if_frame_1_ready(void)
