@@ -10,6 +10,7 @@
 #define FRAME1_NOT_READY   2
 
 typedef enum {WAIT_FOR_TYPE, WAIT_FOR_LENGTH, WAIT_FOR_VALUE} State;
+typedef enum {ERR_NO_ERROR, ERR_NO_COLON, ERR_WRONG_CHECKSUM, ERR_WRONG_TYPE} ErrorLine;
 typedef enum {NOTHING, PROGRAM_MSG, START_RUNNING, TARGET_AVAILABLITY, ACK, NACK, PROGRAMMING_MODE} TLV_Message;
 
 typedef struct
@@ -42,6 +43,10 @@ uint8 *getNonReadyTLVframe(TLV_Buffer *tlv);
 void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV);
 uint8 isFrame0Ready(uint8 readyFlag);
 uint8 isFrame1Ready(uint8 readyFlag);
+
+uint8 verifyType(uint8 *ptrTLV);
+// uint8 verifyLength(uint8 *ptrTLV);
+uint8 verifyCheckSum(uint8 *ptrTLV);
 
 uint32 getAddress(uint8 *ptrTLV);
 uint8 *getData(uint8 *ptrTLV);

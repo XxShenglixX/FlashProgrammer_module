@@ -38,8 +38,11 @@ void SerialISR(void)
 
     ptr = getNonReadyTLVframe(&tlvBuf);
 
-    if(ptr == 0)
+    if(ptr == NULL)
+	{
         uartSendByte(NACK);
+		// while(Busy1USART());		//for debugging purpose
+	}
     else
         tlvReceiveFSM(&fsm, &tlvBuf, ptr);
 }
@@ -61,6 +64,7 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
             if(ptr[fsm->i] == PROGRAMMING_MODE)
             {
                 setProgrammingMode();
+				// while(Busy1USART());		//for debugging purpose
                 resetTarget = 1;
             }
             else if(ptr[fsm->i] == START_RUNNING)
@@ -81,7 +85,15 @@ void tlvReceiveFSM(TLV_FSM *fsm, TLV_Buffer *tlvBuf, uint8 *ptr)
             else
             {
                 fsm->state = WAIT_FOR_TYPE;
-                setTLVframe(tlvBuf, ptr);
+                if(!verifyCheckSum(ptr))
+                {
+                    if(!verifyType(ptr))
+                        uartSendByte(ERR_WRONG_TYPE);
+                    else
+                        uartSendByte(ERR_WRONG_CHECKSUM);
+                }
+                else
+                    setTLVframe(tlvBuf, ptr);
             }
             break;
         default:
@@ -166,6 +178,45 @@ void releaseTLVframe(TLV_Buffer *tlvBuf, uint8 *ptrTLV)
     {
         tlvBuf->readyFrame = tlvBuf->readyFrame | 0x2;
     }
+}
+
+uint8 verifyType(uint8 *ptrTLV)
+{
+    if(((TLV *)ptrTLV)->type == PROGRAM_MSG)
+        return 1;
+
+    return 0;
+}
+
+/* uint8 verifyLength(uint8 *ptrTLV)
+{
+    uint8 i, checkSum = 0;
+
+    for(i = 0; i < (ptrTLV[1] + 1); i++)
+        checkSum += ptrTLV[i];
+
+    checkSum = ~checkSum;
+    checkSum += 1;
+
+    if(checkSum != ptrTLV[i])
+        return 0;
+
+    return 1;
+} */
+
+uint8 verifyCheckSum(uint8 *ptrTLV)
+{
+    uint8 i, checkSum = 0, result;
+
+    for(i = 0; i < (ptrTLV[1] + 1); i++)
+        checkSum += ptrTLV[i];
+
+    result = (checkSum + ptrTLV[i]) & 0x0ff;
+
+    if(result == 0)
+        return 1;
+
+    return 0;
 }
 
 uint32 getAddress(uint8 *ptrTLV)
